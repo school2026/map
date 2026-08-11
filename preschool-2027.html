@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>2027학년도 유치원 특수학급 배치 예상 현황</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:#f9fafb;color:#1f2937;padding:16px}
+.container{max-width:1200px;margin:0 auto}
+h1{font-size:1.4rem;font-weight:800;text-align:center;margin-bottom:4px;color:#111827}
+.subtitle{text-align:center;font-size:.85rem;color:#6b7280;margin-bottom:14px}
+.controls{display:flex;justify-content:center;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.legend{display:flex;gap:12px;font-size:.8rem;align-items:center}
+.leg-item{display:flex;align-items:center;gap:4px}
+.leg-dot{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.2)}
+.leg-yellow{background:#fde047}
+.leg-red{background:#fca5a5}
+.leg-none{background:#fff}
+.btn-print{background:#2563eb;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-weight:700;font-size:.8rem;cursor:pointer}
+.btn-print:hover{background:#1d4ed8}
+#map{width:100%;height:750px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #e5e7eb}
+
+/* 지도 위 라벨 */
+.kg-label{padding:5px 8px;border-radius:6px;font-size:11px;font-weight:700;text-align:center;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.25);border:1.5px solid rgba(0,0,0,.3);line-height:1.35}
+.kg-label.st-none{background:#fff;color:#1f2937}
+.kg-label.st-full{background:#fde047;color:#78350f;border-color:#ca8a04}
+.kg-label.st-over{background:#fca5a5;color:#7f1d1d;border-color:#dc2626}
+.kg-nm{font-size:11px;font-weight:800;margin-bottom:2px}
+.kg-cnt{font-size:12px;font-weight:900}
+.kg-cap{font-size:9px;font-weight:600;opacity:.75}
+
+.summary{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;margin-top:14px;font-size:.82rem}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center}
+.summary-cell{padding:6px}
+.summary-cell .lbl{color:#6b7280;font-size:.72rem;margin-bottom:2px}
+.summary-cell .val{font-size:1.15rem;font-weight:800}
+.footer-note{margin-top:10px;font-size:.7rem;color:#6b7280;text-align:center}
+
+@media print{
+  body{background:#fff;padding:8px}
+  .container{max-width:none}
+  h1{font-size:16pt}
+  .subtitle{font-size:9pt}
+  .btn-print{display:none}
+  #map{height:600px;border:1px solid #999;box-shadow:none;page-break-inside:avoid}
+  .summary{border:1px solid #999}
+  .kg-label{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>2027학년도 유치원 특수학급 배치 예상 현황</h1>
+  <div class="subtitle">수원특수교육지원센터 · 기준일 <span id="baseDate">2026. 8. 1.</span></div>
+
+  <div class="controls">
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot leg-none"></div>여석 있음</div>
+      <div class="leg-item"><div class="leg-dot leg-yellow"></div>정원 충족</div>
+      <div class="leg-item"><div class="leg-dot leg-red"></div>과원</div>
+    </div>
+    <button class="btn-print" onclick="window.print()">🖨️ PDF로 저장 / 인쇄</button>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="summary">
+    <div class="summary-grid">
+      <div class="summary-cell"><div class="lbl">유치원</div><div class="val" id="sumTotal">-</div></div>
+      <div class="summary-cell"><div class="lbl">여석 있음</div><div class="val" id="sumOK" style="color:#059669">-</div></div>
+      <div class="summary-cell"><div class="lbl">정원 충족</div><div class="val" id="sumFull" style="color:#ca8a04">-</div></div>
+      <div class="summary-cell"><div class="lbl">과원</div><div class="val" id="sumOver" style="color:#dc2626">-</div></div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    ※ 정원은 특수학급 수 × 4명(법정 정원) 기준으로 계산됩니다. 예상 인원은 특수교육운영위원회 심의 결과에 따라 매월 갱신됩니다.
+  </div>
+</div>
+
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=979639039043f2f22b11754075b35e66&autoload=false"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+//  📝 매월 특운위 결과 반영 후 아래 숫자만 수정하시면 됩니다
+// ═══════════════════════════════════════════════════════════
+var 예상인원 = {
+  '가온누리유치원':      2,
+  '꿈누리유치원':        3,
+  '능실유치원':         10,
+  '망포유치원':          4,
+  '매산유치원':          5,
+  '매현초병설유치원':    2,
+  '밤밭누리유치원':      4,
+  '빛누리유치원':        1,
+  '세류유치원':          5,
+  '수원금곡초병설유치원':2,
+  '수원매화초병설유치원':3,
+  '신영초병설유치원':    2,
+  '영동초병설유치원':    1,
+  '영통초병설유치원':    2,
+  '큰나래유치원':        2,
+  '태장초병설유치원':    3,
+  '파장유치원':          5,
+  '한누리유치원':       10,
+  '중앙기독유치원':      2
+};
+
+// 유치원 기본 정보 (위치, 정원)
+var 유치원 = [
+  {"name":"가온누리유치원","lat":37.29063088489569,"lng":127.05876869482088,"quota":4},
+  {"name":"꿈누리유치원","lat":37.28080568037739,"lng":126.99552253007605,"quota":8},
+  {"name":"능실유치원","lat":37.24980810167635,"lng":126.9787017751236,"quota":16},
+  {"name":"망포유치원","lat":37.24580989735015,"lng":127.06437842862087,"quota":4},
+  {"name":"매산유치원","lat":37.27023298013815,"lng":127.00589693659362,"quota":8},
+  {"name":"매현초병설유치원","lat":37.284419307086304,"lng":127.06066683149195,"quota":4},
+  {"name":"밤밭누리유치원","lat":37.31210088167648,"lng":127.02249793636822,"quota":8},
+  {"name":"빛누리유치원","lat":37.27655547552814,"lng":127.05242841517443,"quota":4},
+  {"name":"세류유치원","lat":37.25497049935767,"lng":127.02047093632066,"quota":4},
+  {"name":"수원금곡초병설유치원","lat":37.28004093232193,"lng":126.98186884108833,"quota":4},
+  {"name":"수원매화초병설유치원","lat":37.30045577735817,"lng":126.98903935247898,"quota":4},
+  {"name":"신영초병설유치원","lat":37.302095373762376,"lng":127.03823184100716,"quota":8},
+  {"name":"영동초병설유치원","lat":37.290022796580676,"lng":126.98956907518155,"quota":4},
+  {"name":"영통초병설유치원","lat":37.256895793676706,"lng":127.06889870551018,"quota":4},
+  {"name":"큰나래유치원","lat":37.24974891842577,"lng":127.02168340336116,"quota":12},
+  {"name":"태장초병설유치원","lat":37.23820814094533,"lng":127.05070948636783,"quota":4},
+  {"name":"파장유치원","lat":37.31048538068366,"lng":127.02900432055322,"quota":8},
+  {"name":"한누리유치원","lat":37.24960338715953,"lng":126.98916502081735,"quota":16},
+  {"name":"중앙기독유치원","lat":37.27650298648497,"lng":127.01614183527856,"quota":4}
+];
+// ═══════════════════════════════════════════════════════════
+
+function judgeStatus(expected, quota){
+  if(expected > quota) return 'over';
+  if(expected === quota) return 'full';
+  return 'none';
+}
+
+kakao.maps.load(function(){
+  var map = new kakao.maps.Map(document.getElementById('map'), {
+    center: new kakao.maps.LatLng(37.272, 127.010),
+    level: 7
+  });
+  map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.BOTTOMRIGHT);
+
+  var cntOK = 0, cntFull = 0, cntOver = 0;
+  유치원.forEach(function(kg){
+    var expected = 예상인원[kg.name] || 0;
+    var status = judgeStatus(expected, kg.quota);
+
+    if(status === 'over') cntOver++;
+    else if(status === 'full') cntFull++;
+    else cntOK++;
+
+    var html = '<div class="kg-label st-' + status + '">'
+      + '<div class="kg-nm">' + kg.name + '</div>'
+      + '<div class="kg-cnt">' + expected + '명</div>'
+      + '<div class="kg-cap">정원 ' + kg.quota + '명</div>'
+      + '</div>';
+
+    var ov = new kakao.maps.CustomOverlay({
+      content: html,
+      position: new kakao.maps.LatLng(kg.lat, kg.lng),
+      yAnchor: 0.5,
+      xAnchor: 0.5,
+      zIndex: 2
+    });
+    ov.setMap(map);
+  });
+
+  document.getElementById('sumTotal').textContent = 유치원.length + '곳';
+  document.getElementById('sumOK').textContent = cntOK + '곳';
+  document.getElementById('sumFull').textContent = cntFull + '곳';
+  document.getElementById('sumOver').textContent = cntOver + '곳';
+});
+</script>
+</body>
+</html>
