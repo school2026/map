@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>2027학년도 초등학교 입학 특수교육대상자 배치 현황</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Noto Sans KR','Malgun Gothic','맑은 고딕',sans-serif;background:#f5f6f8;color:#222}
+header{background:#fff;border-bottom:1px solid #e2e5ea;padding:8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 8px rgba(0,0,0,.06);position:relative;z-index:1000}
+h1{font-size:1rem;font-weight:800;color:#111827}
+.subtitle{font-size:.76rem;color:#6b7280}
+.legend{display:flex;gap:9px;font-size:.74rem;align-items:center;margin-left:auto;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:4px}
+.leg-dot{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.2)}
+.btn{border:1px solid #d1d5db;background:#fff;color:#1f2937;padding:6px 11px;border-radius:6px;font-weight:700;font-size:.76rem;cursor:pointer;white-space:nowrap;font-family:inherit}
+.btn:hover{background:#f3f4f6}
+.btn.primary{background:#2563eb;border-color:#2563eb;color:#fff}
+.btn.primary:hover{background:#1d4ed8}
+.btn.on{background:#1e3a8a;border-color:#1e3a8a;color:#fff}
+.btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+.filters{display:flex;gap:4px}
+#wrap{position:relative;height:calc(100vh - 50px)}
+#map{width:100%;height:100%}
+
+/* 지도 라벨 */
+.mk{padding:4px 7px;border-radius:6px;font-size:11px;font-weight:700;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.25);border:1.5px solid rgba(0,0,0,.3);line-height:1.35;cursor:pointer;max-width:170px}
+.mk.st-none{background:#fff;color:#1f2937}
+.mk.st-full{background:#fde047;color:#78350f;border-color:#ca8a04}
+.mk.st-cut{background:#bfdbfe;color:#1e3a8a;border-color:#2563eb}
+.mk.st-over{background:#fca5a5;color:#7f1d1d;border-color:#dc2626}
+.mk.sel{outline:3px solid #111827;outline-offset:1px}
+.mk-nm{font-size:11px;font-weight:800;white-space:nowrap}
+.mk-cnt{font-size:12px;font-weight:900}
+.mk-cap{font-size:9px;font-weight:600;opacity:.75;white-space:nowrap}
+.mk-st{font-size:9px;font-weight:700;margin-top:2px;padding-top:2px;border-top:1px dashed rgba(0,0,0,.3);white-space:normal;word-break:keep-all}
+
+/* 요약 */
+.summary{position:absolute;bottom:12px;left:12px;background:rgba(255,255,255,.97);border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:900;display:flex;gap:13px;font-size:.74rem}
+.sc{text-align:center}.sc .l{color:#6b7280;font-size:.66rem}.sc .v{font-size:.98rem;font-weight:800}
+.sc.div{border-left:1px solid #e5e7eb;padding-left:13px}
+
+/* 학생 패널 */
+#panel{position:absolute;top:0;right:0;bottom:0;width:380px;background:#fff;border-left:1px solid #e2e5ea;z-index:950;display:flex;flex-direction:column;box-shadow:-4px 0 16px rgba(0,0,0,.06)}
+#panel.hide{display:none}
+.p-head{padding:10px 12px;border-bottom:1px solid #eef0f3;display:flex;flex-direction:column;gap:7px}
+.p-row{display:flex;gap:6px;align-items:center}
+.p-row input{flex:1;padding:6px 9px;border:1px solid #d1d5db;border-radius:6px;font-size:.8rem;font-family:inherit}
+.p-row select{padding:6px;border:1px solid #d1d5db;border-radius:6px;font-size:.78rem;font-family:inherit}
+.p-sch{font-size:.78rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:6px 8px;display:none;justify-content:space-between;align-items:center}
+.p-sch b{color:#1e3a8a}
+.p-sch button{border:none;background:none;color:#2563eb;font-weight:700;cursor:pointer;font-size:.76rem}
+.p-count{font-size:.72rem;color:#6b7280}
+#list{flex:1;overflow-y:auto;padding:6px 10px 14px}
+.st{border:1px solid #eef0f3;border-radius:8px;padding:8px 9px;margin-top:6px}
+.st.chg{border-color:#f59e0b;background:#fffbeb}
+.st-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.st-nm{font-weight:800;font-size:.86rem}
+.st-from{font-size:.7rem;color:#6b7280}
+.st-meta{font-size:.72rem;color:#4b5563;margin-top:3px;line-height:1.5}
+.st-meta .hl{color:#1d4ed8;font-weight:700}
+.st-note{font-size:.7rem;color:#92400e;background:#fef3c7;border-radius:4px;padding:2px 6px;margin-top:4px;display:inline-block}
+.st-pick{display:flex;gap:6px;align-items:center;margin-top:6px}
+.st-pick select{flex:1;padding:5px 6px;border:1px solid #d1d5db;border-radius:6px;font-size:.8rem;font-family:inherit;background:#fff}
+.st-res{font-size:.7rem;font-weight:700;white-space:nowrap}
+.badge{font-size:.62rem;font-weight:800;background:#f59e0b;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px}
+.p-foot{border-top:1px solid #eef0f3;padding:8px 12px;display:flex;gap:6px;justify-content:flex-end}
+.empty{font-size:.8rem;color:#6b7280;text-align:center;padding:30px 10px}
+.c-none{color:#4b5563}.c-full{color:#a16207}.c-cut{color:#1d4ed8}.c-over{color:#dc2626}
+
+@media(max-width:760px){
+  #panel{top:auto;width:100%;height:58vh;border-left:none;border-top:1px solid #e2e5ea;border-radius:14px 14px 0 0}
+  .legend{margin-left:0}
+  .summary{bottom:auto;top:10px;left:10px;flex-wrap:wrap;gap:8px}
+  body.panel-open .summary{display:none}
+}
+@media print{
+  html,body{overflow:visible;height:auto}
+  #panel,.btn,.filters{display:none!important}
+  #wrap{height:auto}
+  #map{height:75vh;border:1px solid #999}
+  .summary{position:static;margin:10px;box-shadow:none}
+  .mk{box-shadow:none}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body class="panel-open">
+
+<header>
+  <h1>2027학년도 초등학교 입학 특수교육대상자 배치 현황</h1>
+  <span class="subtitle">수원특수교육지원센터 · 기준일 <span id="baseDate">2026. 10. 1.</span></span>
+  <div class="filters" role="group" aria-label="지도에 표시할 학교">
+    <button class="btn on" data-f="all">전체 학교</button>
+    <button class="btn" data-f="has">가배치 학교만</button>
+    <button class="btn" data-f="over">과원만</button>
+  </div>
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#fff"></div>여석</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#bfdbfe"></div>감축</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fde047"></div>정원 충족</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fca5a5"></div>과원</div>
+  </div>
+  <button class="btn" id="btnPanel">학생 목록 닫기</button>
+  <button class="btn primary" onclick="window.print()">🖨️ PDF 저장</button>
+</header>
+
+<div id="wrap">
+  <div id="map"></div>
+  <div class="summary">
+    <div class="sc"><div class="l">대상 학생</div><div class="v" id="sStu">-</div></div>
+    <div class="sc"><div class="l">가배치</div><div class="v" id="sPl">-</div></div>
+    <div class="sc"><div class="l">미정</div><div class="v" id="sUn" style="color:#6b7280">-</div></div>
+    <div class="sc div"><div class="l">여석</div><div class="v c-none" id="sOK">-</div></div>
+    <div class="sc"><div class="l">감축</div><div class="v c-cut" id="sCut">-</div></div>
+    <div class="sc"><div class="l">충족</div><div class="v c-full" id="sFull">-</div></div>
+    <div class="sc"><div class="l">과원</div><div class="v c-over" id="sOver">-</div></div>
+  </div>
+
+  <aside id="panel" aria-label="학생 가배치 편집">
+    <div class="p-head">
+      <div class="p-row">
+        <input id="q" type="search" placeholder="이름, 소속, 희망교로 찾기">
+        <select id="view" aria-label="학생 보기">
+          <option value="all">전체</option>
+          <option value="un">미정만</option>
+          <option value="pl">가배치만</option>
+          <option value="chg">변경한 학생</option>
+        </select>
+      </div>
+      <div class="p-sch" id="pSch"><span><b id="pSchName"></b> <span id="pSchInfo"></span></span><button id="pSchClear">전체 보기</button></div>
+      <div class="p-count" id="pCount"></div>
+    </div>
+    <div id="list"></div>
+    <div class="p-foot">
+      <button class="btn" id="btnReset">변경 되돌리기</button>
+      <button class="btn primary" id="btnCsv">배치 결과 CSV 저장</button>
+    </div>
+  </aside>
+</div>
+
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=979639039043f2f22b11754075b35e66&autoload=false"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+//  📝 설정
+//  이름표시: 'mask' = 가운데 글자 가림(전○수), 'full' = 이름 전체
+// ═══════════════════════════════════════════════════════════
+var 이름표시 = 'full';
+
+// 학교: cls=특수학급 수, cur=현원, grad=6학년 졸업예정  (정원 = 학급 수 × 6명)
+var 학교 = [
+  {"name":"고색초","lat":37.251336548686794,"lng":126.97861760351186,"cls":2,"cur":13,"grad":1},
+  {"name":"고현초","lat":37.24909877240007,"lng":126.98796219071669,"cls":1,"cur":5,"grad":1},
+  {"name":"곡반초","lat":37.24692683965366,"lng":127.03619692355372,"cls":2,"cur":15,"grad":2},
+  {"name":"곡선초","lat":37.25078160187982,"lng":127.02545128995482,"cls":2,"cur":11,"grad":2},
+  {"name":"곡정초","lat":37.24068979174447,"lng":127.0259437809438,"cls":2,"cur":13,"grad":0},
+  {"name":"광교초","lat":37.30379720837144,"lng":127.04573279397393,"cls":1,"cur":10,"grad":0},
+  {"name":"광교호수초","lat":37.279589565434605,"lng":127.05879255061915,"cls":2,"cur":13,"grad":0},
+  {"name":"구운초","lat":37.2805572188618,"lng":126.97797788148033,"cls":3,"cur":16,"grad":2},
+  {"name":"권선초","lat":37.26327979929689,"lng":127.02180289091103,"cls":2,"cur":11,"grad":1},
+  {"name":"규장초","lat":37.2426011241442,"lng":127.02021907839733,"cls":1,"cur":6,"grad":1},
+  {"name":"글빛초","lat":37.239522366712656,"lng":127.0433047086016,"cls":2,"cur":13,"grad":2},
+  {"name":"남수원초","lat":37.24980103256354,"lng":127.0166197701147,"cls":3,"cur":17,"grad":3},
+  {"name":"남창초","lat":37.27830581452274,"lng":127.01421303313714,"cls":1,"cur":4,"grad":0},
+  {"name":"능실초","lat":37.259741534494346,"lng":126.95597352349881,"cls":4,"cur":23,"grad":5},
+  {"name":"다솔초","lat":37.308625935054316,"lng":126.9875917396566,"cls":1,"cur":6,"grad":1},
+  {"name":"당수초","lat":37.289812062537095,"lng":126.94163367719572,"cls":1,"cur":7,"grad":0},
+  {"name":"대선초","lat":37.24212566223838,"lng":127.06466344904528,"cls":2,"cur":11,"grad":4},
+  {"name":"대평초","lat":37.29774171445305,"lng":126.99084740706861,"cls":1,"cur":4,"grad":3},
+  {"name":"동수원초","lat":37.26972211476526,"lng":127.03966908268266,"cls":1,"cur":7,"grad":1},
+  {"name":"망포초","lat":37.24057523413445,"lng":127.04686665835045,"cls":1,"cur":10,"grad":2},
+  {"name":"매교초","lat":37.26892991554839,"lng":127.01836021754941,"cls":1,"cur":11,"grad":0},
+  {"name":"매산초","lat":37.2721700987184,"lng":127.0106997808861,"cls":1,"cur":9,"grad":2},
+  {"name":"매원초","lat":37.274252717997804,"lng":127.06398058569786,"cls":2,"cur":11,"grad":0},
+  {"name":"매탄초","lat":37.2642064936265,"lng":127.04322864941936,"cls":1,"cur":6,"grad":1},
+  {"name":"매현초","lat":37.256494012239784,"lng":127.04199554407079,"cls":1,"cur":3,"grad":0},
+  {"name":"명인초","lat":37.294182861005815,"lng":126.99489666888422,"cls":1,"cur":6,"grad":0},
+  {"name":"산남초","lat":37.27063719403311,"lng":127.05016618366467,"cls":2,"cur":14,"grad":1},
+  {"name":"산의초","lat":37.29027201131216,"lng":127.05750958851306,"cls":1,"cur":7,"grad":2},
+  {"name":"상률초","lat":37.304441809067775,"lng":126.96934201580008,"cls":2,"cur":7,"grad":0},
+  {"name":"상촌초","lat":37.27328376618317,"lng":126.93540574897916,"cls":2,"cur":11,"grad":1},
+  {"name":"서평초","lat":37.26821046589464,"lng":126.99691650491451,"cls":1,"cur":5,"grad":0},
+  {"name":"서호초","lat":37.266191777982456,"lng":126.990332627235,"cls":2,"cur":10,"grad":0},
+  {"name":"선행초","lat":37.25429554909012,"lng":127.02602171460983,"cls":1,"cur":9,"grad":1},
+  {"name":"세곡초","lat":37.2563172,"lng":127.028339,"cls":1,"cur":0,"grad":0,"newcls":true},
+  {"name":"세류초","lat":37.26658369828515,"lng":127.01006201155317,"cls":3,"cur":17,"grad":3},
+  {"name":"송림초","lat":37.29126330557164,"lng":126.99153048935786,"cls":2,"cur":14,"grad":2},
+  {"name":"송원초","lat":37.30836034804008,"lng":127.01011269661763,"cls":1,"cur":6,"grad":1},
+  {"name":"송정초","lat":37.2970842981148,"lng":127.00176508728212,"cls":2,"cur":9,"grad":1},
+  {"name":"송죽초","lat":37.30082797204964,"lng":127.00590459418156,"cls":1,"cur":6,"grad":1},
+  {"name":"수성초","lat":37.30544053778085,"lng":127.01448885279602,"cls":1,"cur":5,"grad":1},
+  {"name":"수원가온초","lat":37.27553703949811,"lng":126.93664974394245,"cls":2,"cur":14,"grad":1},
+  {"name":"수원금곡초","lat":37.27981547584406,"lng":126.9527143647894,"cls":1,"cur":4,"grad":0},
+  {"name":"수원금호초","lat":37.2648811486738,"lng":126.95378906924091,"cls":1,"cur":9,"grad":6},
+  {"name":"수원동신초","lat":37.29571423429738,"lng":126.98911643237776,"cls":1,"cur":5,"grad":1},
+  {"name":"수원매화초","lat":37.274398204624084,"lng":127.04059045897401,"cls":2,"cur":10,"grad":2},
+  {"name":"수원선일초","lat":37.24826424346728,"lng":127.03049713756664,"cls":1,"cur":9,"grad":3},
+  {"name":"수원신곡초","lat":37.25811583660595,"lng":127.01326515019014,"cls":2,"cur":15,"grad":1},
+  {"name":"수원중촌초","lat":37.27239866578853,"lng":126.94463777049098,"cls":2,"cur":13,"grad":2},
+  {"name":"수원초","lat":37.27774118810537,"lng":127.00427064347916,"cls":3,"cur":22,"grad":4},
+  {"name":"수일초","lat":37.311012074747,"lng":127.0005837706974,"cls":1,"cur":6,"grad":0},
+  {"name":"숙지초","lat":37.28317424944136,"lng":126.99178793486118,"cls":1,"cur":5,"grad":1},
+  {"name":"신성초","lat":37.25546189533469,"lng":127.08163684319445,"cls":1,"cur":3,"grad":0},
+  {"name":"신영초","lat":37.25014957011146,"lng":127.06019269724553,"cls":2,"cur":8,"grad":0},
+  {"name":"신풍초","lat":37.28641533176443,"lng":127.05319605107434,"cls":2,"cur":12,"grad":3},
+  {"name":"안룡초","lat":37.23316859173353,"lng":127.02461428063687,"cls":1,"cur":8,"grad":2},
+  {"name":"연무초","lat":37.287128037408735,"lng":127.02207196062545,"cls":1,"cur":6,"grad":0},
+  {"name":"영덕초","lat":37.25892240179379,"lng":127.07402015282132,"cls":1,"cur":7,"grad":1},
+  {"name":"영동초","lat":37.249889616677635,"lng":127.06611001377465,"cls":2,"cur":8,"grad":2},
+  {"name":"영통초","lat":37.25454445610094,"lng":127.0643894395672,"cls":1,"cur":3,"grad":1},
+  {"name":"영화초","lat":37.2969863133256,"lng":127.0164017561735,"cls":2,"cur":15,"grad":2},
+  {"name":"오목초","lat":37.239653692505925,"lng":126.96561819903218,"cls":2,"cur":10,"grad":1},
+  {"name":"오현초","lat":37.24661508877769,"lng":126.96857367062455,"cls":1,"cur":8,"grad":0},
+  {"name":"우만초","lat":37.29147767640827,"lng":127.03239794328287,"cls":2,"cur":11,"grad":2},
+  {"name":"원일초","lat":37.26778747876002,"lng":127.06020109678356,"cls":1,"cur":7,"grad":1},
+  {"name":"원천초","lat":37.268520435871444,"lng":127.05373026092354,"cls":2,"cur":10,"grad":1},
+  {"name":"율전초","lat":37.299771994408474,"lng":126.96860232274524,"cls":1,"cur":5,"grad":1},
+  {"name":"율현초","lat":37.2870883135344,"lng":126.98290121711854,"cls":1,"cur":8,"grad":2},
+  {"name":"이의초","lat":37.29303468656638,"lng":127.07575088545165,"cls":2,"cur":12,"grad":4},
+  {"name":"인계초","lat":37.27304853099895,"lng":127.02583367503202,"cls":2,"cur":11,"grad":1},
+  {"name":"일월초","lat":37.28417193524135,"lng":126.97447262929309,"cls":1,"cur":6,"grad":2},
+  {"name":"입북초","lat":37.29454796008511,"lng":126.96020792343855,"cls":1,"cur":6,"grad":1},
+  {"name":"잠원초","lat":37.23850268409095,"lng":127.05257633520625,"cls":2,"cur":13,"grad":1},
+  {"name":"정자초","lat":37.299595847797406,"lng":126.99504010900594,"cls":1,"cur":8,"grad":2},
+  {"name":"정천초","lat":37.29106634163762,"lng":126.98251687802444,"cls":1,"cur":5,"grad":2},
+  {"name":"조원초","lat":37.30318082562584,"lng":127.01720958012713,"cls":1,"cur":2,"grad":0},
+  {"name":"지동초","lat":37.27718009221647,"lng":127.02446510848127,"cls":1,"cur":9,"grad":3},
+  {"name":"창용초","lat":37.29959629975007,"lng":127.03136940700287,"cls":1,"cur":10,"grad":2},
+  {"name":"천천초","lat":37.30071194554892,"lng":126.98251464558787,"cls":1,"cur":8,"grad":0},
+  {"name":"청명초","lat":37.26562763735081,"lng":127.08521597857171,"cls":1,"cur":4,"grad":0},
+  {"name":"칠보초","lat":37.269799180130704,"lng":126.95534475530344,"cls":2,"cur":9,"grad":1},
+  {"name":"탑동초","lat":37.273683504250165,"lng":126.97299914334558,"cls":1,"cur":6,"grad":0},
+  {"name":"태장초","lat":37.24065523361638,"lng":127.05467406856792,"cls":2,"cur":14,"grad":1},
+  {"name":"파장초","lat":37.30887637298679,"lng":126.99230967312988,"cls":3,"cur":18,"grad":4},
+  {"name":"팔달초","lat":37.27965955720636,"lng":127.03584894422234,"cls":1,"cur":9,"grad":1},
+  {"name":"호매실초","lat":37.26730372207108,"lng":126.95649054693162,"cls":2,"cur":7,"grad":1},
+  {"name":"화서초","lat":37.281219277422714,"lng":127.00057226436856,"cls":2,"cur":10,"grad":1},
+  {"name":"화양초","lat":37.28348529037183,"lng":126.99507499593238,"cls":2,"cur":8,"grad":4},
+  {"name":"화홍초","lat":37.28718862526213,"lng":127.00297995672994,"cls":3,"cur":16,"grad":4},
+  {"name":"황곡초","lat":37.26556036758817,"lng":127.07824305320794,"cls":3,"cur":16,"grad":1},
+  {"name":"효동초","lat":37.262563392382134,"lng":127.04576139848416,"cls":1,"cur":5,"grad":0},
+  {"name":"효성초","lat":37.283478868547896,"lng":127.03930135915762,"cls":1,"cur":6,"grad":1},
+  {"name":"효정초","lat":37.2551379712759,"lng":127.03497499390065,"cls":1,"cur":5,"grad":0},
+  {"name":"효천초","lat":37.293508736363115,"lng":126.987044421442,"cls":2,"cur":8,"grad":2},
+  {"name":"효탑초","lat":37.266651535526464,"lng":126.97605690076526,"cls":2,"cur":13,"grad":2}
+];
+
+// 학생: pl = 가배치교 (빈칸이면 미정). 확정되면 pl만 고치면 됩니다.
+var 학생 = [
+  {"id":1,"name":"전민수","from":"늘푸른동산어린이집","h":["아름학교","자혜학교","수원서광학교"],"near":"산남초","pl":"산남초","note":""},
+  {"id":2,"name":"박준범","from":"로뎀어린이집","h":["아름학교","자혜학교","오현초"],"near":"오현초","pl":"","note":""},
+  {"id":3,"name":"정아름","from":"모아랑어린이집","h":["아름학교","성은학교","용인강남학교"],"near":"홍천초","pl":"","note":""},
+  {"id":4,"name":"방시우","from":"밤밭누리유치원","h":["아름학교","남수원초","수원신곡초"],"near":"남수원초","pl":"남수원초","note":"심층"},
+  {"id":5,"name":"김이든","from":"소명숲어린이집","h":["아름학교","수원서광학교","용인강남학교"],"near":"신봉초","pl":"","note":""},
+  {"id":6,"name":"이태운","from":"시립상현어린이집","h":["아름학교","수원서광학교","자혜학교"],"near":"성복초","pl":"","note":""},
+  {"id":7,"name":"김은진","from":"시립 서호어린이집","h":["아름학교","자혜학교","한국선진학교"],"near":"수원금호초","pl":"","note":""},
+  {"id":8,"name":"이준서","from":"시립호매실어린이집","h":["아름학교","황곡초","영덕초"],"near":"황곡초","pl":"황곡초","note":""},
+  {"id":9,"name":"백혜원","from":"시립홍재어린이집","h":["아름학교","자혜학교","명당초(복합특수학급)"],"near":"영덕초","pl":"","note":""},
+  {"id":10,"name":"우리온","from":"시립홍재어린이집","h":["아름학교","화성나래학교","자혜학교"],"near":"안룡초","pl":"곡정초","note":"심층?"},
+  {"id":11,"name":"한서연","from":"시립홍재어린이집","h":["아름학교","명당초(복합특수)","화성나래학교"],"near":"곡정초","pl":"","note":""},
+  {"id":12,"name":"박지안","from":"아름학교 유치원","h":["아름학교","자혜학교","수원서광학교"],"near":"매교초","pl":"","note":""},
+  {"id":13,"name":"박주하","from":"(경주)아이꿈터 어린이집","h":["아름학교","자혜학교","수원서광학교"],"near":"세류초","pl":"세류초","note":""},
+  {"id":14,"name":"오승민","from":"이지어린이집","h":["아름학교","수원서광학교","조원초"],"near":"조원초","pl":"조원초","note":""},
+  {"id":15,"name":"이솔빈","from":"태장초등학교 병설유치원","h":["아름학교","자혜학교","태장초"],"near":"대선초","pl":"대선초","note":""},
+  {"id":16,"name":"이로운","from":"화성삼성어린이집","h":["아름학교","매원초","광교호수초"],"near":"매원초","pl":"매원초","note":""},
+  {"id":17,"name":"서아민","from":"시립능동어린이집","h":["아름학교(시각과정)","기산초","서경초"],"near":"","pl":"","note":""},
+  {"id":18,"name":"이루리","from":"오산세교유치원","h":["아름학교(시각과정)","",""],"near":"","pl":"","note":""},
+  {"id":19,"name":"송치담","from":"큰나래유치원","h":["아름학교(시각과정)","동수원초","산남초"],"near":"동수원초","pl":"","note":""},
+  {"id":20,"name":"김나린","from":"능실유치원","h":["수원서광학교","자혜학교","능실초"],"near":"오현초","pl":"","note":""},
+  {"id":21,"name":"윤서린","from":"밤밭누리유치원","h":["수원서광학교","다솔초","파장초"],"near":"파장초","pl":"","note":""},
+  {"id":22,"name":"최예훈","from":"밤밭누리유치원","h":["수원서광학교","자혜학교","입북초"],"near":"입북초","pl":"","note":""},
+  {"id":23,"name":"조소이","from":"방주어린이집","h":["수원서광학교","파장초","다솔초"],"near":"파장초","pl":"","note":""},
+  {"id":24,"name":"한아인","from":"방주어린이집(권선)","h":["수원서광학교","자혜학교","다솔초"],"near":"다솔초","pl":"","note":""},
+  {"id":25,"name":"유시우","from":"방주어린이집(조원)","h":["수원서광학교","아름학교","영화초"],"near":"영화초","pl":"영화초","note":""},
+  {"id":26,"name":"김수아","from":"수원서광학교","h":["수원서광학교","자혜학교","호매실초"],"near":"호매실초","pl":"","note":""},
+  {"id":27,"name":"안혁","from":"수원서광학교","h":["수원서광학교","아름학교","명인초"],"near":"명인초","pl":"","note":""},
+  {"id":28,"name":"신성빈","from":"숲속반디어린이집","h":["수원서광학교","다솔초","파장초"],"near":"파장초","pl":"파장초","note":""},
+  {"id":29,"name":"이지한","from":"시립서호어린이집","h":["수원서광학교","다솔초","파장초"],"near":"다솔초","pl":"","note":""},
+  {"id":30,"name":"이다솜","from":"시립홍재어린이집","h":["수원서광학교","아름학교","자혜학교"],"near":"영화초","pl":"","note":""},
+  {"id":31,"name":"홍지우","from":"시립홍재어린이집","h":["수원서광학교","명당초(복합특수)","자혜학교"],"near":"수원신곡초","pl":"","note":""},
+  {"id":32,"name":"김서준","from":"시립화서1동어린이집","h":["수원서광학교","자혜학교","화서초"],"near":"화서초","pl":"","note":""},
+  {"id":33,"name":"강민구","from":"인계초(특수학급)","h":["수원서광학교","자혜학교","아름학교"],"near":"매교초","pl":"","note":""},
+  {"id":34,"name":"송우진","from":"밤밭누리유치원","h":["자혜학교","아름학교","수원서광학교"],"near":"탑동초","pl":"","note":""},
+  {"id":35,"name":"임도윤","from":"방주어린이집(구운동)","h":["자혜학교","수원서광학교","아름학교"],"near":"구운초","pl":"","note":""},
+  {"id":36,"name":"조연재","from":"시립도이장애전문어린이집","h":["자혜학교","수원서광학교","아름학교"],"near":"수원중촌초","pl":"","note":""},
+  {"id":37,"name":"박다온","from":"시립서호어린이집","h":["자혜학교","수원서광학교","당수초"],"near":"당수초","pl":"","note":""},
+  {"id":38,"name":"손여원","from":"시립서호어린이집","h":["자혜학교","수원서광학교","아름학교"],"near":"수원초","pl":"","note":""},
+  {"id":39,"name":"윤우빈","from":"시립서호어린이집","h":["자혜학교","아름학교","수원서광학교"],"near":"파장초","pl":"","note":""},
+  {"id":40,"name":"이건우","from":"시립서호어린이집","h":["자혜학교","아름학교","수원서광학교"],"near":"수원초","pl":"","note":""},
+  {"id":41,"name":"윤성빈","from":"시립칠보어린이집","h":["자혜학교","수원서광학교","상촌초"],"near":"수원중촌초","pl":"상촌초","note":"쌍둥이분리"},
+  {"id":42,"name":"장하윤","from":"시립홍재어린이집","h":["자혜학교","아름학교","수원서광학교"],"near":"글빛초","pl":"글빛초","note":""},
+  {"id":43,"name":"김다솜","from":"자혜학교 유치원","h":["자혜학교","탑동초","효탑초"],"near":"탑동초","pl":"탑동초","note":""},
+  {"id":44,"name":"전용수","from":"자혜학교 유치원","h":["자혜학교","수원서광학교","서호초"],"near":"서호초","pl":"","note":""},
+  {"id":45,"name":"조하경","from":"자혜학교 유치원","h":["자혜학교","수원서광학교","상촌초"],"near":"수원가온초","pl":"상촌초","note":""},
+  {"id":46,"name":"채다은","from":"매현초병설유치원","h":["명당초(복합특수)","매현초","매탄초"],"near":"효동초","pl":"효동초","note":""},
+  {"id":47,"name":"김은아","from":"빛누리유치원","h":["명당초(복합특수)","곡반초","선행초"],"near":"곡반초","pl":"곡반초","note":"특수학급 설치교 중 최근거리(과원됨)"},
+  {"id":48,"name":"김찬","from":"시립홍재어린이집","h":["명당초(복합특수)","",""],"near":"곡반초","pl":"곡반초","note":"학구"},
+  {"id":49,"name":"이주한","from":"시립홍재어린이집","h":["명당초(복합특수)","아름학교","곡반초"],"near":"곡반초","pl":"곡반초","note":"특수학급 설치교 중 최근거리(과원됨)"},
+  {"id":50,"name":"김리겸","from":"큰나래유치원","h":["명당초(복합특수)","세곡초(특수학급 신설 희망)","선행초"],"near":"선행초","pl":"세곡초","note":"특수학급 설치교 중 최근거리(과원됨)"},
+  {"id":51,"name":"윤서준","from":"빛누리유치원","h":["광교초","신풍초","산의초"],"near":"광교초","pl":"광교초","note":""},
+  {"id":52,"name":"오시윤","from":"망포유치원","h":["글빛초","망포초","잠원초"],"near":"글빛초","pl":"글빛초","note":""},
+  {"id":53,"name":"우다현","from":"홍재어린이집","h":["글빛초","망포초","곡반초"],"near":"글빛초","pl":"글빛초","note":""},
+  {"id":54,"name":"박서하","from":"화산초병설유치원","h":["글빛초","화산초","안녕초"],"near":"글빛초","pl":"글빛초","note":""},
+  {"id":55,"name":"고윤서","from":"시립영통힐스어린이집","h":["남수원초","규장초","곡선초"],"near":"남수원초","pl":"남수원초","note":""},
+  {"id":56,"name":"김가인","from":"매산유치원","h":["남창초","화홍초","연무초"],"near":"남창초","pl":"남창초","note":""},
+  {"id":57,"name":"허예성","from":"능실유치원","h":["능실초","호매실초","수원금호초"],"near":"능실초","pl":"능실초","note":""},
+  {"id":58,"name":"김나경","from":"시립 금호어린이집","h":["능실초","호매실초","수원금호초"],"near":"능실초","pl":"능실초","note":""},
+  {"id":59,"name":"엄지호","from":"호계꿈어린이집","h":["능실초","호매실초","수원금곡초"],"near":"능실초","pl":"능실초","note":""},
+  {"id":60,"name":"김라온","from":"시립금호어린이집","h":["당수초","상촌초","수원금곡초"],"near":"상촌초, 수원가온초","pl":"상촌초","note":""},
+  {"id":61,"name":"이원","from":"블루밍어린이집","h":["대선초","태장초","잠원초"],"near":"대선초","pl":"대선초","note":""},
+  {"id":62,"name":"윤미나","from":"수원매화초등학교 병설유치원","h":["동수원초","매탄초","산남초"],"near":"매탄초/산남초","pl":"","note":""},
+  {"id":63,"name":"이하랑","from":"시립광교2동어린이집","h":["동수원초","수원매화초","산남초"],"near":"동수원초/학구수원매화초","pl":"수원매화초","note":""},
+  {"id":64,"name":"박태연","from":"망포유치원","h":["망포초","글빛초","태장초"],"near":"망포초","pl":"망포초","note":""},
+  {"id":65,"name":"김이나","from":"매산유치원","h":["매교초","인계초","지동초"],"near":"매교초","pl":"인계초","note":""},
+  {"id":66,"name":"박지유","from":"매산유치원","h":["매교초","매산초","세류초"],"near":"매교초","pl":"","note":"차근거리:권선초(0.9)"},
+  {"id":67,"name":"박영욱","from":"매산유치원","h":["매산초","수원초","세류초"],"near":"수원초","pl":"수원초","note":""},
+  {"id":68,"name":"김진우","from":"시립세곡어린이집","h":["매산초","매교초","세류초"],"near":"매교초/매산초","pl":"매산초","note":""},
+  {"id":69,"name":"최도하","from":"가람유치원","h":["매원초","신풍초","산의초"],"near":"매원초","pl":"매원초","note":""},
+  {"id":70,"name":"이나나","from":"꿈누리유치원","h":["매원초","신풍초","산의초"],"near":"광교호수초","pl":"광교호수초","note":""},
+  {"id":71,"name":"이나예","from":"꿈누리유치원","h":["매원초","신풍초)","산의초)"],"near":"광교호수초","pl":"광교호수초","note":""},
+  {"id":72,"name":"김민재","from":"큰나래유치원","h":["매원초","원일초","광교호수초"],"near":"매원초","pl":"매원초","note":"매원초,원일초 공동학구"},
+  {"id":73,"name":"임라임","from":"큰나래유치원","h":["매원초","광교호수초","신풍초"],"near":"매원초","pl":"매원초","note":""},
+  {"id":74,"name":"위강준","from":"늘푸른동산어린이집","h":["매탄초","매탄초(일반학급)",""],"near":"매탄초","pl":"매탄초","note":""},
+  {"id":75,"name":"김한별","from":"매탄이솝어린이집","h":["매현초","효정초",""],"near":"매현초","pl":"매현초","note":"학구X(학구초 미설치교)"},
+  {"id":76,"name":"적윤진","from":"매현초병설유치원","h":["매현초","남수원초","글빛초"],"near":"매현초","pl":"매현초","note":"학구X(학구초 미설치교)"},
+  {"id":77,"name":"조준원","from":"신영초등학교 병설유치원","h":["매현초","효정초","매탄초"],"near":"매현초","pl":"매현초","note":"학구X(학구초 미설치교)"},
+  {"id":78,"name":"노민혁","from":"시립원천동어린이집","h":["산남초","원천초","수원매화초"],"near":"산남초","pl":"산남초","note":""},
+  {"id":79,"name":"손하준","from":"시립호수어린이집","h":["산의초","광교호수초","신풍초"],"near":"이의초","pl":"산의초","note":"형제분리희망"},
+  {"id":80,"name":"김리호","from":"큰나래유치원","h":["산의초","신풍초","광교호수초"],"near":"산의초","pl":"산의초","note":""},
+  {"id":81,"name":"김수빈","from":"한누리유치원","h":["산의초","신풍초","광교호수초"],"near":"산의초","pl":"산의초","note":""},
+  {"id":82,"name":"김수겸","from":"시립고등행복어린이집","h":["서평초","수원초",""],"near":"서평초/수원초","pl":"서평초","note":"학구는수원초,최근거리교는 서평초(수정)"},
+  {"id":83,"name":"김해윤","from":"시립세곡어린이집","h":["선행초","규장초",""],"near":"곡선초","pl":"선행초","note":"형제분리희망"},
+  {"id":84,"name":"장예서","from":"세류유치원","h":["세류초","인계초","권선초"],"near":"매교초","pl":"인계초","note":"형제분리희망"},
+  {"id":85,"name":"안이현","from":"시립파크푸르지오어린이집","h":["송림초","명인초","화양초"],"near":"송림초","pl":"송림초","note":"형제랑같이등교희망"},
+  {"id":86,"name":"채윤희","from":"수원서광학교","h":["송원초","수일초","조원초"],"near":"송원초","pl":"","note":"학구아님(학구초:특수학급X)"},
+  {"id":87,"name":"이바다","from":"조은유치원","h":["송원초","수성초","수일초"],"near":"송원초","pl":"송원초","note":""},
+  {"id":88,"name":"장슬아","from":"가정보육","h":["송정초","능실초","화홍초"],"near":"명인초","pl":"송정초","note":"형제분리희망"},
+  {"id":89,"name":"김강희","from":"파장유치원","h":["수성초","송원초","파장초"],"near":"수성초","pl":"수성초","note":""},
+  {"id":90,"name":"홍시우","from":"가온누리유치원","h":["수원가온초","상촌초","당수초"],"near":"수원가온초","pl":"수원가온초","note":""},
+  {"id":91,"name":"공서진","from":"시립칠보어린이집","h":["수원금곡초","칠보초","수원중촌초(일반학급)"],"near":"수원금곡초","pl":"수원금곡초","note":""},
+  {"id":92,"name":"류서우","from":"수원금곡초등학교병설유치원","h":["수원금호초","능실초","호매실초"],"near":"수원금호초","pl":"수원금호초","note":""},
+  {"id":93,"name":"양희수","from":"영통초병설유치원","h":["수원신곡초","영통초","규장초"],"near":"수원신곡초","pl":"수원신곡초","note":""},
+  {"id":94,"name":"이다연","from":"금곡동어린이집","h":["수원중촌초","",""],"near":"수원중촌초","pl":"수원중촌초","note":""},
+  {"id":95,"name":"전승빈","from":"시립금호어린이집","h":["수원중촌초","상촌초","수원가온초"],"near":"수원중촌초","pl":"수원중촌초","note":""},
+  {"id":96,"name":"유하나","from":"샬롬어린이집","h":["수원초","화서초","서호초"],"near":"수원초","pl":"수원초","note":""},
+  {"id":97,"name":"김서준","from":"꽃뫼보듬이나눔이어린이집","h":["숙지초","화양초","화서초"],"near":"숙지초","pl":"숙지초","note":""},
+  {"id":98,"name":"육서아","from":"가정보육","h":["신성초(순회학급)","매현초(순회학급)","오목초(순회학급)"],"near":"신성초","pl":"","note":""},
+  {"id":99,"name":"강아윤","from":"신영초등학교 병설유치원","h":["신영초","규장초","곡정초"],"near":"곡정초","pl":"","note":"곡정(과원)아니면 규장(자리있음)?"},
+  {"id":100,"name":"SONG CHENGHE (송승혁)","from":"아름유치원","h":["신영초","영통초","영동초"],"near":"신영초","pl":"신영초","note":""},
+  {"id":101,"name":"김태현","from":"큰나래유치원","h":["신풍초","산의초","광교호수초"],"near":"신풍초","pl":"신풍초","note":""},
+  {"id":102,"name":"윤지성","from":"시립영덕어린이집","h":["영덕초","황곡초","영통초"],"near":"영덕초","pl":"영덕초","note":""},
+  {"id":103,"name":"윤이담","from":"신영초등학교 병설유치원","h":["영동초","신영초","영통초"],"near":"영동초","pl":"영동초","note":"학구x. 학구초미설치교"},
+  {"id":104,"name":"윤이소","from":"노블카운티 삼성어린이집","h":["영통초","신영초","황곡초"],"near":"영덕초","pl":"","note":"영통초자리4"},
+  {"id":105,"name":"윤이유","from":"노블카운티 삼성어린이집","h":["영통초","신영초","황곡초"],"near":"영덕초","pl":"","note":"신성초1.0영통초1.2"},
+  {"id":106,"name":"진주아","from":"방주어린이집(조원)","h":["영화초","조원초","수성초"],"near":"영화초","pl":"영화초","note":""},
+  {"id":107,"name":"백시윤","from":"시립보훈어린이집","h":["영화초","송정초","송죽초"],"near":"영화초","pl":"영화초","note":""},
+  {"id":108,"name":"김도훈","from":"수원시립지방산업단지어린이집","h":["오목초","오현초","고현초"],"near":"오목초","pl":"오목초","note":""},
+  {"id":109,"name":"김남설","from":"시립그린어린이집","h":["오목초","오현초","고색초"],"near":"오목초","pl":"오목초","note":""},
+  {"id":110,"name":"홍지우","from":"신영초등학교 병설유치원","h":["원일초","산남초","효동초"],"near":"원일초","pl":"원일초","note":""},
+  {"id":111,"name":"박시우","from":"한누리유치원","h":["원천초","산남초","명당초(복합특수)"],"near":"원천초","pl":"원천초","note":""},
+  {"id":112,"name":"박지호","from":"능실유치원","h":["율현초","정천초","일월초"],"near":"율현초","pl":"율현초","note":""},
+  {"id":113,"name":"안수아","from":"시립상현어린이집","h":["이의초","이의초(일반학급)",""],"near":"이의초","pl":"이의초","note":""},
+  {"id":114,"name":"민준희","from":"한누리유치원","h":["인계초","효성초","지동초"],"near":"팔달초","pl":"지동초","note":"인계, 지동 둘다 이 학생가면 과원됨"},
+  {"id":115,"name":"김초아","from":"동그라미어린이집","h":["잠원초","태장초","잠원초(일반학급)"],"near":"잠원초","pl":"잠원초","note":""},
+  {"id":116,"name":"민예서","from":"한빛어린이집","h":["정자초","파장초","대평초"],"near":"정자초","pl":"정자초","note":""},
+  {"id":117,"name":"김로건","from":"시립광교풍경채어린이집","h":["중앙기독초","흥덕초","황곡초"],"near":"흥덕초","pl":"","note":""},
+  {"id":118,"name":"나연우","from":"중앙기독유치원","h":["중앙기독초","",""],"near":"","pl":"","note":""},
+  {"id":119,"name":"박이현","from":"중앙기독유치원","h":["중앙기독초","",""],"near":"","pl":"","note":""},
+  {"id":120,"name":"이예성","from":"중앙기독유치원","h":["중앙기독초","",""],"near":"","pl":"","note":""},
+  {"id":121,"name":"김모이즈","from":"청계유치원","h":["중앙기독초","",""],"near":"","pl":"","note":""},
+  {"id":122,"name":"임수호","from":"큰나래유치원","h":["중앙기독초","",""],"near":"매원초","pl":"","note":""},
+  {"id":123,"name":"CUIJINGHAO(최경호)","from":"큰나래유치원","h":["지동초","인계초","매산초"],"near":"지동초","pl":"지동초","note":""},
+  {"id":124,"name":"김예은","from":"창용초등학교 병설유치원","h":["창용초","창용초(일반학급)",""],"near":"창용초","pl":"창용초","note":""},
+  {"id":125,"name":"조아인","from":"한누리유치원","h":["창용초","연무초","팔달초"],"near":"창용초","pl":"창용초","note":""},
+  {"id":126,"name":"송찬혁","from":"파장유치원","h":["파장초","송죽초","수일초"],"near":"송죽초","pl":"송죽초","note":""},
+  {"id":127,"name":"공혜정","from":"가정보육","h":["팔달초","지동초",""],"near":"팔달초","pl":"팔달초","note":""},
+  {"id":128,"name":"김도윤","from":"데레사유치원","h":["팔달초","효성초","지동초"],"near":"팔달초","pl":"팔달초","note":""},
+  {"id":129,"name":"손준우","from":"능실유치원","h":["호매실초","수원금호초","능실초"],"near":"호매실초","pl":"호매실초","note":""},
+  {"id":130,"name":"지하진","from":"능실유치원","h":["호매실초","능실초","수원금호초"],"near":"능실초","pl":"","note":""},
+  {"id":131,"name":"한시훈","from":"수원금곡초등학교병설유치원","h":["호매실초","수원금호초","능실초"],"near":"호매실초, 수원금호초","pl":"호매실초","note":""},
+  {"id":132,"name":"이도진","from":"샬롬어린이집","h":["화서초","수원초",""],"near":"화서초","pl":"화서초","note":""},
+  {"id":133,"name":"홍담","from":"시립꽃뫼보듬이나눔이어린이집","h":["화서초","화양초",""],"near":"화서초","pl":"화서초","note":""},
+  {"id":134,"name":"김이호","from":"화서초병설유치원","h":["화양초","화서초",""],"near":"화양초","pl":"화양초","note":""},
+  {"id":135,"name":"최선우","from":"매현초병설유치원","h":["효동초","매탄초","매현초"],"near":"매탄초","pl":"효동초","note":""},
+  {"id":136,"name":"전예준","from":"화성반월뷰파크어린이집","h":["효동초","매현초","곡반초"],"near":"곡반초","pl":"곡반초","note":""},
+  {"id":137,"name":"진유주","from":"한누리유치원","h":["효성초","원천초","산남초"],"near":"산의초","pl":"곡반초","note":""},
+  {"id":138,"name":"최유주","from":"시립꽃뫼보듬이나눔이어린이집","h":["효천초","송림초","숙지초"],"near":"송림초","pl":"효천초","note":"쌍둥이분리희망"},
+  {"id":139,"name":"임지훈","from":"시립수지어린이집","h":["광교초(일반학급)","창용초","우만초"],"near":"광교초","pl":"","note":""},
+  {"id":140,"name":"이도현","from":"화서경기도청어린이집","h":["권선초(일반학급)","",""],"near":"권선초","pl":"","note":""},
+  {"id":141,"name":"남지율","from":"시립누리뜰어린이집","h":["글빛초(일반학급)","",""],"near":"글빛초","pl":"","note":""},
+  {"id":142,"name":"이서호","from":"아름유치원","h":["망포초(일반학급)","",""],"near":"망포초","pl":"","note":""},
+  {"id":143,"name":"양승재","from":"예그린유치원","h":["매여울초(일반학급)","",""],"near":"매여울초","pl":"","note":""},
+  {"id":144,"name":"조아랑","from":"선행초병설유치원","h":["선행초(일반학급)","",""],"near":"선행초","pl":"","note":""},
+  {"id":145,"name":"김현우","from":"경기도청어린이집","h":["송림초(일반학급)","",""],"near":"송림초","pl":"","note":""},
+  {"id":146,"name":"정시우","from":"수원금곡초등학교병설유치원","h":["수원금호초(일반학급)","",""],"near":"수원금호초","pl":"","note":""},
+  {"id":147,"name":"나도경","from":"영통초병설유치원","h":["영통초(일반학급)","",""],"near":"영통초","pl":"","note":""},
+  {"id":148,"name":"황지원","from":"굿모닝어린이집","h":["에바다학교","남수원초",""],"near":"남수원초","pl":"","note":""},
+  {"id":149,"name":"전시하","from":"오산세교유치원","h":["오산 성심학교","화성나래학교","자혜학교"],"near":"","pl":"","note":""},
+  {"id":150,"name":"최유준","from":"꿈누리유치원","h":["용인강남학교","서광학교","아름학교"],"near":"이의초","pl":"이의초","note":""},
+  {"id":151,"name":"이연우","from":"모아랑어린이집","h":["용인강남학교","용인다움학교","아름학교"],"near":"용인둔전초","pl":"","note":""},
+  {"id":152,"name":"이은우","from":"모아랑어린이집","h":["용인강남학교","용인다움학교","아름학교"],"near":"용인둔전초","pl":"","note":""},
+  {"id":153,"name":"정재율","from":"세움어린이집","h":["용인강남학교","아름학교","신월초"],"near":"정평초","pl":"","note":""},
+  {"id":154,"name":"김선민","from":"초롱유치원","h":["용인강남학교","아름학교","신갈초"],"near":"청곡초","pl":"","note":""},
+  {"id":155,"name":"김정후","from":"신갈초병설유치원","h":["용인다움학교","아름학교","용인강남학교"],"near":"청곡초","pl":"","note":""},
+  {"id":156,"name":"홍유준","from":"하길유치원","h":["의왕정음학교","한국선진학교","아름학교"],"near":"","pl":"","note":""},
+  {"id":157,"name":"마태음","from":"시립송린어린이집","h":["한국선진학교","자혜학교","송린초"],"near":"","pl":"","note":""},
+  {"id":158,"name":"최하연","from":"시립홍재어린이집","h":["화성 나래학교","아름학교","오산 성심학교"],"near":"","pl":"","note":""},
+  {"id":159,"name":"이도건","from":"한우리학교","h":["기산초","서경초","화성반월초"],"near":"","pl":"","note":""},
+  {"id":160,"name":"장선우","from":"수현유치원","h":["봉담2-1초","자혜학교","화성나래학교"],"near":"","pl":"","note":""},
+  {"id":161,"name":"차연아","from":"시립파크푸르지오어린이집","h":["송림초(일반학급)","",""],"near":"송림초","pl":"","note":""}
+];
+// ═══════════════════════════════════════════════════════════
+
+var KEY='elem2027-placement';
+var orig={}; 학생.forEach(function(s){orig[s.id]=s.pl;});
+try{ var saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+  학생.forEach(function(s){ if(Object.prototype.hasOwnProperty.call(saved,s.id)) s.pl=saved[s.id]; }); }catch(e){}
+function save(){ var d={}; 학생.forEach(function(s){ if(s.pl!==orig[s.id]) d[s.id]=s.pl; });
+  try{ localStorage.setItem(KEY,JSON.stringify(d)); }catch(e){} }
+
+var byName={}; 학교.forEach(function(s){byName[s.name]=s;});
+var schoolNames=학교.map(function(s){return s.name;}).sort(function(a,b){return a.localeCompare(b,'ko');});
+
+function nm(n){ if(이름표시==='full'||n.length<2) return n;
+  if(n.length===2) return n[0]+'○'; return n[0]+'○'.repeat(n.length-2)+n[n.length-1]; }
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function calc(sch){
+  var list=학생.filter(function(s){return s.pl===sch.name;});
+  var q=sch.cls*6, e=sch.cur-sch.grad+list.length, st='none';
+  if(e>q) st='over'; else if(e===q) st='full'; else if(e<=6*(sch.cls-1)) st='cut';
+  return {list:list,q:q,e:e,st:st};
+}
+var stTxt={none:'여석',full:'충족',cut:'감축',over:'과원'};
+function stDetail(r){ if(r.st==='over') return (r.e-r.q)+'명 과원'; if(r.st==='full') return '정원 충족';
+  if(r.st==='cut') return '감축 대상'; return (r.q-r.e)+'명 여석'; }
+
+var map, ovs={}, filter='all', focus=null;
+
+function labelHtml(sch,r){
+  var names=r.list.length? '<div class="mk-st">가배치 '+r.list.length+'명: '+r.list.map(function(s){return esc(nm(s.name));}).join(', ')+'</div>':'';
+  return '<div class="mk-nm">'+sch.name+'</div><div class="mk-cnt">'+r.e+'명</div>'
+    +'<div class="mk-cap">'+(sch.newcls?'특수학급 신설 희망 · 정원 '+r.q+'명':sch.cls+'학급 · 정원 '+r.q+'명')+'</div>'+names;
+}
+
+function renderMap(){
+  var cnt={none:0,full:0,cut:0,over:0};
+  학교.forEach(function(sch){
+    var r=calc(sch); cnt[r.st]++;
+    var o=ovs[sch.name];
+    o.el.className='mk st-'+r.st+(focus===sch.name?' sel':'');
+    o.el.innerHTML=labelHtml(sch,r);
+    var show = filter==='all' || (filter==='has'&&r.list.length>0) || (filter==='over'&&r.st==='over');
+    o.ov.setMap(show?map:null);
+  });
+  var pl=학생.filter(function(s){return s.pl;}).length;
+  document.getElementById('sStu').textContent=학생.length+'명';
+  document.getElementById('sPl').textContent=pl+'명';
+  document.getElementById('sUn').textContent=(학생.length-pl)+'명';
+  document.getElementById('sOK').textContent=cnt.none+'곳';
+  document.getElementById('sCut').textContent=cnt.cut+'곳';
+  document.getElementById('sFull').textContent=cnt.full+'곳';
+  document.getElementById('sOver').textContent=cnt.over+'곳';
+}
+
+function optHtml(sel){
+  var h='<option value=""'+(sel?'':' selected')+'>미정</option>';
+  schoolNames.forEach(function(n){ h+='<option'+(n===sel?' selected':'')+'>'+n+'</option>'; });
+  return h;
+}
+function resHtml(s){
+  if(!s.pl) return '';
+  var r=calc(byName[s.pl]);
+  return '<span class="st-res c-'+r.st+'">'+r.e+'/'+r.q+' '+stTxt[r.st]+'</span>';
+}
+
+function renderList(){
+  var q=document.getElementById('q').value.trim(), v=document.getElementById('view').value;
+  var items=학생.filter(function(s){
+    if(focus && s.pl!==focus) return false;
+    if(v==='un'&&s.pl) return false;
+    if(v==='pl'&&!s.pl) return false;
+    if(v==='chg'&&s.pl===orig[s.id]) return false;
+    if(q){ var hay=[s.name,s.from,s.near,s.pl,s.note].concat(s.h).join(' ');
+      if(hay.indexOf(q)<0) return false; }
+    return true;
+  });
+  document.getElementById('pCount').textContent=items.length+'명 표시';
+  var box=document.getElementById('list');
+  if(!items.length){ box.innerHTML='<div class="empty">조건에 맞는 학생이 없어요. 검색어나 보기 조건을 바꿔 보세요.</div>'; return; }
+  box.innerHTML=items.map(function(s){
+    var chg=s.pl!==orig[s.id];
+    var hopes=s.h.filter(Boolean).map(function(h,i){ return (i+1)+'희망 '+(byName[h]?'<span class="hl">'+esc(h)+'</span>':esc(h)); }).join(' / ');
+    return '<div class="st'+(chg?' chg':'')+'" data-id="'+s.id+'">'
+      +'<div class="st-top"><span class="st-nm">'+esc(nm(s.name))+(chg?'<span class="badge">변경</span>':'')+'</span><span class="st-from">'+esc(s.from)+'</span></div>'
+      +'<div class="st-meta">'+(hopes||'희망교 없음')+'<br>학구초/최근거리 '+esc(s.near||'-')+(chg?' · 원래 '+esc(orig[s.id]||'미정'):'')+'</div>'
+      +(s.note?'<div class="st-note">'+esc(s.note)+'</div>':'')
+      +'<div class="st-pick"><select aria-label="'+esc(nm(s.name))+' 가배치교">'+optHtml(s.pl)+'</select>'+resHtml(s)+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function renderFocus(){
+  var b=document.getElementById('pSch');
+  if(!focus){ b.style.display='none'; return; }
+  var r=calc(byName[focus]);
+  b.style.display='flex';
+  document.getElementById('pSchName').textContent=focus;
+  document.getElementById('pSchInfo').textContent='예상 '+r.e+'/'+r.q+'명 · '+stDetail(r);
+}
+function refresh(){ renderMap(); renderList(); renderFocus(); }
+
+document.getElementById('list').addEventListener('change',function(e){
+  if(e.target.tagName!=='SELECT') return;
+  var id=+e.target.closest('.st').dataset.id;
+  학생.forEach(function(s){ if(s.id===id) s.pl=e.target.value; });
+  save(); refresh();
+});
+document.getElementById('q').addEventListener('input',renderList);
+document.getElementById('view').addEventListener('change',renderList);
+document.getElementById('pSchClear').addEventListener('click',function(){ focus=null; refresh(); });
+document.querySelectorAll('.filters .btn').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.filters .btn').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on'); filter=b.dataset.f; renderMap();
+  });
+});
+document.getElementById('btnPanel').addEventListener('click',function(){
+  var p=document.getElementById('panel'), open=p.classList.toggle('hide')===false;
+  document.body.classList.toggle('panel-open',open);
+  this.textContent=open?'학생 목록 닫기':'학생 목록 열기';
+});
+document.getElementById('btnReset').addEventListener('click',function(){
+  var n=학생.filter(function(s){return s.pl!==orig[s.id];}).length;
+  if(!n){ alert('변경한 학생이 없어요.'); return; }
+  if(!confirm('변경한 '+n+'명의 가배치교를 파일에 저장된 원래 값으로 되돌릴까요?')) return;
+  학생.forEach(function(s){ s.pl=orig[s.id]; });
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  refresh();
+});
+document.getElementById('btnCsv').addEventListener('click',function(){
+  var rows=[['순번','소속교','이름','1희망','2희망','3희망','학구초/최근거리','가배치교','원래 가배치교','비고']];
+  학생.forEach(function(s){ rows.push([s.id,s.from,s.name,s.h[0],s.h[1],s.h[2],s.near,s.pl,orig[s.id],s.note]); });
+  var csv='\ufeff'+rows.map(function(r){return r.map(function(x){x=String(x==null?'':x);return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;}).join(',');}).join('\r\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='2027_초등_가배치결과.csv'; document.body.appendChild(a); a.click(); a.remove();
+});
+
+kakao.maps.load(function(){
+  map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(37.272,127.010),level:7});
+  map.addControl(new kakao.maps.ZoomControl(),kakao.maps.ControlPosition.BOTTOMRIGHT);
+  학교.forEach(function(sch){
+    var el=document.createElement('div');
+    el.addEventListener('click',function(){
+      focus=(focus===sch.name)?null:sch.name;
+      var p=document.getElementById('panel');
+      if(focus&&p.classList.contains('hide')) document.getElementById('btnPanel').click();
+      document.getElementById('view').value='all';
+      refresh();
+    });
+    var ov=new kakao.maps.CustomOverlay({content:el,position:new kakao.maps.LatLng(sch.lat,sch.lng),yAnchor:.5,xAnchor:.5,zIndex:2,clickable:true});
+    ovs[sch.name]={el:el,ov:ov};
+  });
+  refresh();
+});
+</script>
+</body>
+</html>
