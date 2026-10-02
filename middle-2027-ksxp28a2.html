@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>2027학년도 중학교 입학 특수교육대상자 배치 현황</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Noto Sans KR','Malgun Gothic','맑은 고딕',sans-serif;background:#f5f6f8;color:#222}
+header{background:#fff;border-bottom:1px solid #e2e5ea;padding:8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 8px rgba(0,0,0,.06);position:relative;z-index:1000}
+h1{font-size:1rem;font-weight:800;color:#111827}
+.subtitle{font-size:.76rem;color:#6b7280}
+.legend{display:flex;gap:9px;font-size:.74rem;align-items:center;margin-left:auto;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:4px}
+.leg-dot{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.2)}
+.btn{border:1px solid #d1d5db;background:#fff;color:#1f2937;padding:6px 11px;border-radius:6px;font-weight:700;font-size:.76rem;cursor:pointer;white-space:nowrap;font-family:inherit}
+.btn:hover{background:#f3f4f6}
+.btn.primary{background:#2563eb;border-color:#2563eb;color:#fff}
+.btn.primary:hover{background:#1d4ed8}
+.btn.on{background:#1e3a8a;border-color:#1e3a8a;color:#fff}
+.btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+.filters{display:flex;gap:4px}
+.region{padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:.76rem;font-weight:700;font-family:inherit;background:#fff}
+#wrap{position:relative;height:calc(100vh - 50px)}
+#map{width:100%;height:100%}
+.mk{padding:4px 7px;border-radius:6px;font-size:11px;font-weight:700;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.25);border:1.5px solid rgba(0,0,0,.3);line-height:1.35;cursor:pointer;max-width:180px}
+.mk.st-none{background:#fff;color:#1f2937}
+.mk.st-full{background:#fde047;color:#78350f;border-color:#ca8a04}
+.mk.st-cut{background:#bfdbfe;color:#1e3a8a;border-color:#2563eb}
+.mk.st-over{background:#fca5a5;color:#7f1d1d;border-color:#dc2626}
+.mk.sel{outline:3px solid #111827;outline-offset:1px}
+.mk-nm{font-size:11px;font-weight:800;white-space:nowrap}
+.mk-cnt{font-size:12px;font-weight:900}
+.mk-cap{font-size:9px;font-weight:600;opacity:.75;white-space:nowrap}
+.mk-ex{font-size:9px;font-weight:700;margin-top:1px}
+.mk-ex .t-none{color:#4b5563}.mk-ex .t-full{color:#a16207}.mk-ex .t-cut{color:#1d4ed8}.mk-ex .t-over{color:#dc2626}
+.mk-st{font-size:9px;font-weight:700;margin-top:2px;padding-top:2px;border-top:1px dashed rgba(0,0,0,.3);white-space:normal;word-break:keep-all}
+.mk-note{font-size:8.5px;font-weight:700;margin-top:2px;opacity:.85;white-space:normal}
+.summary{position:absolute;bottom:12px;left:12px;background:rgba(255,255,255,.97);border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:900;display:flex;gap:13px;font-size:.74rem}
+.sc{text-align:center}.sc .l{color:#6b7280;font-size:.66rem}.sc .v{font-size:.98rem;font-weight:800}
+.sc.div{border-left:1px solid #e5e7eb;padding-left:13px}
+#panel{position:absolute;top:0;right:0;bottom:0;width:360px;background:#fff;border-left:1px solid #e2e5ea;z-index:950;display:flex;flex-direction:column;box-shadow:-4px 0 16px rgba(0,0,0,.06)}
+#panel.hide{display:none}
+.p-head{padding:10px 12px;border-bottom:1px solid #eef0f3;display:flex;flex-direction:column;gap:7px}
+.p-row{display:flex;gap:6px;align-items:center}
+.p-row input{flex:1;padding:6px 9px;border:1px solid #d1d5db;border-radius:6px;font-size:.8rem;font-family:inherit}
+.p-row select{padding:6px;border:1px solid #d1d5db;border-radius:6px;font-size:.78rem;font-family:inherit}
+.p-sch{font-size:.78rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:6px 8px;display:none;justify-content:space-between;align-items:center}
+.p-sch b{color:#1e3a8a}
+.p-sch button{border:none;background:none;color:#2563eb;font-weight:700;cursor:pointer;font-size:.76rem}
+.p-count{font-size:.72rem;color:#6b7280}
+#list{flex:1;overflow-y:auto;padding:6px 10px 14px}
+.st{border:1px solid #eef0f3;border-radius:8px;padding:8px 9px;margin-top:6px}
+.st.chg{border-color:#f59e0b;background:#fffbeb}
+.st-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.st-nm{font-weight:800;font-size:.86rem}
+.st-from{font-size:.7rem;color:#6b7280;text-align:right}
+.st-meta{font-size:.72rem;color:#4b5563;margin-top:3px}
+.st-pick{display:flex;gap:6px;align-items:center;margin-top:6px}
+.st-pick select{flex:1;padding:5px 6px;border:1px solid #d1d5db;border-radius:6px;font-size:.8rem;font-family:inherit;background:#fff}
+.st-res{font-size:.7rem;font-weight:700;white-space:nowrap}
+.badge{font-size:.62rem;font-weight:800;background:#f59e0b;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px}
+.badge.re{background:#6366f1}
+.p-foot{border-top:1px solid #eef0f3;padding:8px 12px;display:flex;gap:6px;justify-content:flex-end}
+.empty{font-size:.8rem;color:#6b7280;text-align:center;padding:30px 10px}
+.c-none{color:#4b5563}.c-full{color:#a16207}.c-cut{color:#1d4ed8}.c-over{color:#dc2626}
+@media(max-width:760px){
+  #panel{top:auto;width:100%;height:58vh;border-left:none;border-top:1px solid #e2e5ea;border-radius:14px 14px 0 0}
+  .legend{margin-left:0}
+  .summary{bottom:auto;top:10px;left:10px;flex-wrap:wrap;gap:8px}
+  body.panel-open .summary{display:none}
+}
+@media print{
+  html,body{overflow:visible;height:auto}
+  #panel,.btn,.filters,.region{display:none!important}
+  #wrap{height:auto}
+  #map{height:75vh;border:1px solid #999}
+  .summary{position:static;margin:10px;box-shadow:none}
+  .mk{box-shadow:none}
+}
+</style>
+</head>
+<body class="panel-open">
+<header>
+  <h1>2027학년도 중학교 입학 특수교육대상자 배치 현황</h1>
+  <span class="subtitle">수원특수교육지원센터 · <span id="regionTag"></span>기준일 <span id="baseDate">2026. 10. 1.</span></span>
+  <select class="region" id="region" aria-label="학군 보기"><option value="">전체 학군</option><option>북부1중학군</option><option>북부2중학군</option><option>북부3중학군</option><option>호매실중학군</option><option>동부중학군</option><option>남부중학군</option><option>영통중학군</option><option>광교중학군</option><option>오목고색중학군</option></select>
+  <div class="filters" role="group" aria-label="지도에 표시할 학교">
+    <button class="btn on" data-f="all">전체 학교</button>
+    <button class="btn" data-f="has">입학 학교만</button>
+    <button class="btn" data-f="over">과원만</button>
+  </div>
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#fff"></div>여석</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#bfdbfe"></div>감축</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fde047"></div>정원 충족</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fca5a5"></div>과원</div>
+  </div>
+  <button class="btn" id="btnPanel">학생 목록 닫기</button>
+  <button class="btn primary" onclick="window.print()">🖨️ PDF 저장</button>
+</header>
+<div id="wrap">
+  <div id="map"></div>
+  <div class="summary">
+    <div class="sc"><div class="l">대상 학생</div><div class="v" id="sStu">-</div></div>
+    <div class="sc"><div class="l">배치</div><div class="v" id="sPl">-</div></div>
+    <div class="sc"><div class="l">미정</div><div class="v" id="sUn" style="color:#6b7280">-</div></div>
+    <div class="sc div"><div class="l">여석</div><div class="v c-none" id="sOK">-</div></div>
+    <div class="sc"><div class="l">감축</div><div class="v c-cut" id="sCut">-</div></div>
+    <div class="sc"><div class="l">충족</div><div class="v c-full" id="sFull">-</div></div>
+    <div class="sc"><div class="l">과원</div><div class="v c-over" id="sOver">-</div></div>
+  </div>
+  <aside id="panel" aria-label="학생 배치 편집">
+    <div class="p-head">
+      <div class="p-row">
+        <input id="q" type="search" placeholder="이름, 출신 초등학교, 배치교로 찾기">
+        <select id="view" aria-label="학생 보기">
+          <option value="all">전체</option><option value="un">미정만</option><option value="chg">변경한 학생</option>
+        </select>
+      </div>
+      <div class="p-sch" id="pSch"><span><b id="pSchName"></b> <span id="pSchInfo"></span></span><button id="pSchClear">전체 보기</button></div>
+      <div class="p-count" id="pCount"></div>
+    </div>
+    <div id="list"></div>
+    <div class="p-foot">
+      <button class="btn" id="btnReset">변경 되돌리기</button>
+      <button class="btn primary" id="btnCsv">배치 결과 CSV 저장</button>
+    </div>
+  </aside>
+</div>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=979639039043f2f22b11754075b35e66&libraries=services&autoload=false"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+//  📝 데이터 (2026. 10. 1. 현원 + 2026-9월 특운위 중입 결과 중 특수학급·순회학급·복합특수학급 배치 학생)
+//  학교: sc/ic/cc = 특수·순회·복합 학급 수, scur/icur/ccur = 10.1 현원, sgrad/igrad/cgrad = 3학년 졸업예정
+//  정원: 특수학급 6명, 순회·복합특수학급 4명 (학급당)
+//  학생: pl = 배치교, t = 유형(s 특수학급, i 순회학급, c 복합특수학급), fromMid = 재배치 학생의 현재 중학교
+// ═══════════════════════════════════════════════════════════
+var 학교 = [
+  {"name":"고색중","lat":37.25357834271397,"lng":126.98125744162556,"zone":["오목고색중학군"],"sc":3,"scur":15,"sgrad":5,"ic":1,"icur":2,"igrad":1,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"곡반중","lat":37.24430795951143,"lng":127.0330934265434,"zone":["남부중학군"],"sc":1,"scur":4,"sgrad":2,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"곡선중","lat":37.2545866753455,"lng":127.02343766878664,"zone":["남부중학군"],"sc":2,"scur":13,"sgrad":6,"ic":1,"icur":3,"igrad":1,"cc":2,"ccur":8,"cgrad":1,"note":""},
+  {"name":"광교중","lat":37.3044440649379,"lng":127.04478287845481,"zone":["광교중학군"],"sc":1,"scur":3,"sgrad":0,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"광교호수중","lat":37.272552085310686,"lng":127.06382975479072,"zone":["광교중학군"],"sc":1,"scur":10,"sgrad":1,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"구운중","lat":37.276725443282,"lng":126.97742931838808,"zone":["북부3중학군"],"sc":1,"scur":9,"sgrad":3,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"권선중","lat":37.2488210675927,"lng":127.01717466717568,"zone":["남부중학군"],"sc":2,"scur":12,"sgrad":3,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"남수원중","lat":37.25201173218473,"lng":127.03365474929583,"zone":["남부중학군"],"sc":1,"scur":5,"sgrad":0,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"능실중","lat":37.26083417480698,"lng":126.95631389894548,"zone":["호매실중학군"],"sc":2,"scur":15,"sgrad":4,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"대평중","lat":37.297279816303785,"lng":126.98944610417381,"zone":["북부2중학군"],"sc":1,"scur":9,"sgrad":3,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"망포중","lat":37.23832098418783,"lng":127.0558331669758,"zone":["영통중학군"],"sc":2,"scur":9,"sgrad":3,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"매원중","lat":37.26653720327204,"lng":127.04520010526133,"zone":["동부중학군"],"sc":1,"scur":6,"sgrad":2,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"매탄중","lat":37.260619506275184,"lng":127.03916547490395,"zone":["남부중학군"],"sc":1,"scur":7,"sgrad":1,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"매현중","lat":37.254797488409814,"lng":127.0428597440852,"zone":["남부중학군"],"sc":1,"scur":3,"sgrad":2,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"명인중","lat":37.292211752242885,"lng":126.99314028692619,"zone":["북부2중학군"],"sc":1,"scur":7,"sgrad":2,"ic":1,"icur":3,"igrad":2,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"산남중","lat":37.26912064475756,"lng":127.05144199648733,"zone":["동부중학군"],"sc":2,"scur":14,"sgrad":4,"ic":1,"icur":3,"igrad":1,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"상촌중","lat":37.27622786960736,"lng":126.93532148683377,"zone":["호매실중학군"],"sc":1,"scur":9,"sgrad":4,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"서호중","lat":37.26650915596229,"lng":126.98774803331136,"zone":["북부3중학군"],"sc":2,"scur":7,"sgrad":6,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"세류중","lat":37.257751457067585,"lng":127.00688476861593,"zone":["남부중학군"],"sc":2,"scur":10,"sgrad":3,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"수원다산중","lat":37.283974438830334,"lng":127.05110253199373,"zone":["광교중학군"],"sc":1,"scur":8,"sgrad":2,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"수원북중","lat":37.29543129602429,"lng":127.02100859022683,"zone":["북부1중학군"],"sc":3,"scur":17,"sgrad":5,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"수원제일중","lat":37.298,"lng":126.93,"zone":["호매실중학군"],"sc":2,"scur":8,"sgrad":5,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":"당수동 330-3 이전 예정","addr":"경기도 수원시 권선구 당수동 330-3"},
+  {"name":"숙지중","lat":37.28238136195323,"lng":126.99218833031972,"zone":["북부1중학군"],"sc":3,"scur":16,"sgrad":7,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"연무중","lat":37.292642158391224,"lng":127.05172303687598,"zone":["광교중학군"],"sc":1,"scur":5,"sgrad":0,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"영덕중","lat":37.25842299494687,"lng":127.07293748075278,"zone":["영통중학군"],"sc":1,"scur":4,"sgrad":0,"ic":1,"icur":3,"igrad":1,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"영동중","lat":37.2393,"lng":127.0428,"zone":["영통중학군"],"sc":1,"scur":0,"sgrad":0,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":"특수학급 신설 예정","addr":"경기도 수원시 영통구 망포로84번길 3","newcls":true},
+  {"name":"영통중","lat":37.25363024498674,"lng":127.06374615580724,"zone":["영통중학군"],"sc":1,"scur":5,"sgrad":1,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"원천중","lat":37.27639304671914,"lng":127.04907910571205,"zone":["동부중학군"],"sc":2,"scur":10,"sgrad":2,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"율전중","lat":37.3032989106851,"lng":126.96627165207414,"zone":["북부2중학군"],"sc":2,"scur":8,"sgrad":2,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"이목중","lat":37.31829111690385,"lng":126.98234134900117,"zone":["북부2중학군"],"sc":1,"scur":4,"sgrad":2,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"이의중","lat":37.291298709360234,"lng":127.07086592389271,"zone":["광교중학군"],"sc":1,"scur":5,"sgrad":1,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"잠원중","lat":37.23906742107535,"lng":127.04888021268837,"zone":["영통중학군"],"sc":1,"scur":5,"sgrad":2,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"정천중","lat":37.289439873723964,"lng":126.98189136022913,"zone":["북부2중학군"],"sc":2,"scur":9,"sgrad":6,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"조원중","lat":37.30743375379389,"lng":127.01693982794323,"zone":["북부1중학군"],"sc":3,"scur":19,"sgrad":8,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"창용중","lat":37.29310916492834,"lng":127.03008666947434,"zone":["동부중학군"],"sc":1,"scur":6,"sgrad":2,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":"2028.3.1. 폐교 예정"},
+  {"name":"천천중","lat":37.30030176262384,"lng":126.98113870336782,"zone":["북부2중학군"],"sc":1,"scur":8,"sgrad":0,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"청명중","lat":37.26183467683851,"lng":127.07806446357792,"zone":["영통중학군"],"sc":1,"scur":3,"sgrad":2,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"칠보중","lat":37.27364650632833,"lng":126.94442263148926,"zone":["호매실중학군"],"sc":2,"scur":14,"sgrad":4,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"태장중","lat":37.24895755805587,"lng":127.0651680430981,"zone":["영통중학군"],"sc":2,"scur":7,"sgrad":1,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""},
+  {"name":"호매실중","lat":37.26856933327347,"lng":126.95554278108848,"zone":["호매실중학군"],"sc":1,"scur":11,"sgrad":3,"ic":0,"icur":0,"igrad":0,"cc":0,"ccur":0,"cgrad":0,"note":""}
+];
+var 학생 = [
+  {"id":1,"name":"최인우","from_":"곡선초등학교(특수학급)","pl":"권선중","t":"s"},
+  {"id":2,"name":"조윤찬","from_":"대선초등학교(특수학급)","pl":"망포중","t":"s"},
+  {"id":3,"name":"류민준","from_":"수원신곡초등학교(특수학급)","pl":"세류중","t":"s"},
+  {"id":4,"name":"황규현","from_":"신풍초등학교(특수학급)","pl":"수원다산중","t":"s"},
+  {"id":5,"name":"서준건","from_":"원일초등학교(특수학급)","pl":"광교호수중","t":"s"},
+  {"id":6,"name":"탁유현","from_":"이의초등학교(특수학급)","pl":"이의중","t":"s"},
+  {"id":7,"name":"김성현","from_":"입북초등학교(특수학급)","pl":"율전중","t":"s"},
+  {"id":8,"name":"조율","from_":"동수원초등학교(특수학급)","pl":"매원중","t":"s"},
+  {"id":9,"name":"임예준","from_":"수원서광학교(특수학교)","pl":"정천중","t":"s"},
+  {"id":10,"name":"전세혁","from_":"파장초등학교(특수학급)","pl":"조원중","t":"s"},
+  {"id":11,"name":"안성빈","from_":"화홍초등학교(특수학급)","pl":"수원북중","t":"s"},
+  {"id":12,"name":"강동하","from_":"세류초등학교(특수학급)","pl":"곡선중","t":"s"},
+  {"id":13,"name":"손우찬","from_":"자혜학교(특수학교)","pl":"영동중","t":"s"},
+  {"id":14,"name":"박준혁","from_":"호매실초등학교(특수학급)","pl":"호매실중","t":"s"},
+  {"id":15,"name":"우시훈","from_":"곡선초등학교(특수학급)","pl":"곡선중","t":"c"},
+  {"id":16,"name":"나서연","from_":"권선초등학교(특수학급)","pl":"곡선중","t":"s"},
+  {"id":17,"name":"이하은","from_":"매탄초등학교(특수학급)","pl":"매원중","t":"s"},
+  {"id":18,"name":"박용우","from_":"고색초등학교(특수학급)","pl":"고색중","t":"s"},
+  {"id":19,"name":"추송우","from_":"고현초등학교(특수학급)","pl":"고색중","t":"s"},
+  {"id":20,"name":"이지윤","from_":"안룡초등학교(특수학급)","pl":"곡반중","t":"s"},
+  {"id":21,"name":"함유현","from_":"(용인)백암초등학교수정분교장(일반학급)","pl":"곡선중","t":"s"},
+  {"id":22,"name":"김민지","from_":"선행초등학교(특수학급)","pl":"곡선중","t":"s"},
+  {"id":23,"name":"김시후","from_":"구운초등학교(특수학급)","pl":"구운중","t":"s"},
+  {"id":24,"name":"김호준","from_":"구운초등학교(특수학급)","pl":"구운중","t":"s"},
+  {"id":25,"name":"김다은","from_":"규장초등학교(특수학급)","pl":"권선중","t":"s"},
+  {"id":26,"name":"이시우","from_":"남수원초등학교(특수학급)","pl":"권선중","t":"s"},
+  {"id":27,"name":"이유진","from_":"남수원초등학교(특수학급)","pl":"세류중","t":"s"},
+  {"id":28,"name":"정준호","from_":"남수원초등학교(특수학급)","pl":"권선중","t":"s"},
+  {"id":29,"name":"고다연","from_":"곡정초등학교","pl":"곡반중","t":"s"},
+  {"id":30,"name":"정의진","from_":"수원선일초등학교(특수학급)","pl":"남수원중","t":"s"},
+  {"id":31,"name":"정하진","from_":"수원선일초등학교(특수학급)","pl":"남수원중","t":"s"},
+  {"id":32,"name":"현우진","from_":"수원선일초등학교(특수학급)","pl":"남수원중","t":"s"},
+  {"id":33,"name":"김승훈","from_":"능실초등학교(특수학급)","pl":"능실중","t":"s"},
+  {"id":34,"name":"김태환","from_":"능실초등학교(특수학급)","pl":"능실중","t":"s"},
+  {"id":35,"name":"양준서","from_":"능실초등학교(특수학급)","pl":"능실중","t":"s"},
+  {"id":36,"name":"이서율","from_":"능실초등학교(특수학급)","pl":"능실중","t":"s"},
+  {"id":37,"name":"이채은","from_":"능실초등학교(특수학급)","pl":"능실중","t":"s"},
+  {"id":38,"name":"심우현","from_":"수원금호초등학교(특수학급)","pl":"능실중","t":"s"},
+  {"id":39,"name":"양현승","from_":"수원금호초등학교(특수학급)","pl":"능실중","t":"s"},
+  {"id":40,"name":"배준서","from_":"대평초등학교(특수학급)","pl":"천천중","t":"s"},
+  {"id":41,"name":"송가예","from_":"수원동신초등학교(특수학급)","pl":"대평중","t":"s"},
+  {"id":42,"name":"김소은","from_":"정자초등학교(특수학급)","pl":"대평중","t":"s"},
+  {"id":43,"name":"민연경","from_":"파장초등학교(일반학급)","pl":"대평중","t":"s"},
+  {"id":44,"name":"유현서","from_":"우만초등학교(특수학급)","pl":"수원북중","t":"s"},
+  {"id":45,"name":"양아름","from_":"팔달초등학교(특수학급)","pl":"원천중","t":"s"},
+  {"id":46,"name":"박민서","from_":"대선초등학교(특수학급)","pl":"망포중","t":"s"},
+  {"id":47,"name":"서가은","from_":"대선초등학교(특수학급)","pl":"망포중","t":"s"},
+  {"id":48,"name":"김동주","from_":"잠원초등학교(특수학급)","pl":"망포중","t":"s"},
+  {"id":49,"name":"신건호","from_":"태장초등학교(특수학급)","pl":"망포중","t":"s"},
+  {"id":50,"name":"배민준","from_":"인계초등학교(특수학급)","pl":"매원중","t":"s"},
+  {"id":51,"name":"차준혁","from_":"효동초등학교(일반학급)","pl":"매원중","t":"s"},
+  {"id":52,"name":"이혜린","from_":"수원매화초등학교(특수학급)","pl":"매탄중","t":"s"},
+  {"id":53,"name":"이현우","from_":"곡반초등학교(특수학급)","pl":"매현중","t":"s"},
+  {"id":54,"name":"신우빈","from_":"송림초등학교(특수학급)","pl":"명인중","t":"s"},
+  {"id":55,"name":"이정재","from_":"정자초등학교(특수학급)","pl":"천천중","t":"s"},
+  {"id":56,"name":"임찬","from_":"파장초등학교(특수학급)","pl":"명인중","t":"s"},
+  {"id":57,"name":"김지효","from_":"화홍초등학교(특수학급)","pl":"명인중","t":"s"},
+  {"id":58,"name":"이은수","from_":"산남초등학교(특수학급)","pl":"산남중","t":"s"},
+  {"id":59,"name":"정승재","from_":"원천초등학교(특수학급)","pl":"산남중","t":"s"},
+  {"id":60,"name":"조예준","from_":"수원금호초등학교(특수학급)","pl":"상촌중","t":"s"},
+  {"id":61,"name":"임주원","from_":"효탑초등학교(특수학급)","pl":"서호중","t":"s"},
+  {"id":62,"name":"장효주","from_":"효탑초등학교(특수학급)","pl":"서호중","t":"s"},
+  {"id":63,"name":"김하율","from_":"매산초등학교(특수학급)","pl":"세류중","t":"s"},
+  {"id":64,"name":"최승환","from_":"세류초등학교(특수학급)","pl":"세류중","t":"s"},
+  {"id":65,"name":"조건희","from_":"송죽초등학교(특수학급)","pl":"대평중","t":"s"},
+  {"id":66,"name":"윤진우","from_":"송정초등학교(특수학급)","pl":"조원중","t":"s"},
+  {"id":67,"name":"김현준","from_":"수원초등학교(특수학급)","pl":"숙지중","t":"s"},
+  {"id":68,"name":"노민수","from_":"영화초등학교(특수학급)","pl":"조원중","t":"s"},
+  {"id":69,"name":"송빛나","from_":"영화초등학교(특수학급)","pl":"수원북중","t":"s"},
+  {"id":70,"name":"이수연","from_":"창용초등학교(특수학급)","pl":"수원북중","t":"s"},
+  {"id":71,"name":"이은상","from_":"창용초등학교(특수학급)","pl":"수원북중","t":"s"},
+  {"id":72,"name":"김수영","from_":"수원초등학교(특수학급)","pl":"숙지중","t":"s"},
+  {"id":73,"name":"이준이","from_":"수원초등학교(특수학급)","pl":"숙지중","t":"s"},
+  {"id":74,"name":"유고은","from_":"숙지초등학교(특수학급)","pl":"숙지중","t":"s"},
+  {"id":75,"name":"현소은","from_":"화서초등학교(특수학급)","pl":"숙지중","t":"s"},
+  {"id":76,"name":"김경윤","from_":"화양초등학교(특수학급)","pl":"숙지중","t":"s"},
+  {"id":77,"name":"김용하","from_":"화양초등학교(특수학급)","pl":"숙지중","t":"s"},
+  {"id":78,"name":"박수빈","from_":"화양초등학교(특수학급)","pl":"숙지중","t":"s"},
+  {"id":79,"name":"윤태기","from_":"화양초등학교(특수학급)","pl":"숙지중","t":"s"},
+  {"id":80,"name":"이준희","from_":"매여울초등학교(일반학급)","pl":"연무중","t":"s"},
+  {"id":81,"name":"김민우","from_":"산의초등학교(일반학급)","pl":"연무중","t":"s"},
+  {"id":82,"name":"조승윤","from_":"산의초등학교(특수학급)","pl":"연무중","t":"s"},
+  {"id":83,"name":"신아정","from_":"매산초등학교(순회학급)","pl":"영덕중","t":"i"},
+  {"id":84,"name":"인채원","from_":"영덕초등학교(특수학급)","pl":"영덕중","t":"s"},
+  {"id":85,"name":"김보민","from_":"글빛초등학교(특수학급)","pl":"영동중","t":"s"},
+  {"id":86,"name":"김태윤","from_":"글빛초등학교(특수학급)","pl":"영동중","t":"s"},
+  {"id":87,"name":"빈호준","from_":"망포초등학교(특수학급)","pl":"영동중","t":"s"},
+  {"id":88,"name":"최희준","from_":"망포초등학교(특수학급)","pl":"영동중","t":"s"},
+  {"id":89,"name":"허민영","from_":"구운초등학교(순회학급)","pl":"영통중","t":"s"},
+  {"id":90,"name":"이율복","from_":"영통초등학교(특수학급)","pl":"영통중","t":"s"},
+  {"id":91,"name":"장서연","from_":"수원매화초등학교(특수학급)","pl":"원천중","t":"s"},
+  {"id":92,"name":"안유빈","from_":"원천초등학교(특수학급)","pl":"원천중","t":"s"},
+  {"id":93,"name":"심정보","from_":"다솔초등학교(특수학급)","pl":"이목중","t":"s"},
+  {"id":94,"name":"이영민","from_":"파장초등학교(특수학급)","pl":"이목중","t":"s"},
+  {"id":95,"name":"명종도","from_":"이의초등학교(특수학급)","pl":"이의중","t":"s"},
+  {"id":96,"name":"김시헌","from_":"율현초등학교(특수학급)","pl":"정천중","t":"s"},
+  {"id":97,"name":"정솔온","from_":"율현초등학교(특수학급)","pl":"정천중","t":"s"},
+  {"id":98,"name":"이윤서","from_":"일월초등학교(특수학급)","pl":"정천중","t":"s"},
+  {"id":99,"name":"장재현","from_":"일월초등학교(특수학급)","pl":"정천중","t":"s"},
+  {"id":100,"name":"윤동현","from_":"정천초등학교(특수학급)","pl":"정천중","t":"s"},
+  {"id":101,"name":"노성빈","from_":"효천초등학교(특수학급)","pl":"정천중","t":"s"},
+  {"id":102,"name":"문소율","from_":"송원초등학교(특수학급)","pl":"조원중","t":"s"},
+  {"id":103,"name":"이준수","from_":"수성초등학교(특수학급)","pl":"조원중","t":"s"},
+  {"id":104,"name":"박시은","from_":"파장초등학교(특수학급)","pl":"조원중","t":"s"},
+  {"id":105,"name":"이재현","from_":"황곡초등학교(특수학급)","pl":"청명중","t":"s"},
+  {"id":106,"name":"계승현","from_":"수원가온초등학교(특수학급)","pl":"칠보중","t":"s"},
+  {"id":107,"name":"송이은","from_":"수원금호초등학교(특수학급)","pl":"칠보중","t":"s"},
+  {"id":108,"name":"손준보","from_":"수원중촌초등학교(특수학급)","pl":"칠보중","t":"s"},
+  {"id":109,"name":"백승찬","from_":"대선초등학교(특수학급)","pl":"태장중","t":"s"},
+  {"id":110,"name":"상희원","from_":"영동초등학교(특수학급)","pl":"태장중","t":"s"},
+  {"id":111,"name":"황모경","from_":"영동초등학교(특수학급)","pl":"태장중","t":"s"},
+  {"id":112,"name":"김호선","from_":"수원금호초등학교(특수학급)","pl":"칠보중","t":"s"},
+  {"id":113,"name":"양현우","from_":"수원금호초등학교(특수학급)","pl":"호매실중","t":"s"},
+  {"id":114,"name":"정예진","from_":"칠보초등학교(특수학급)","pl":"호매실중","t":"s"},
+  {"id":115,"name":"이서빈","from_":"안룡초등학교(일반학급)","pl":"곡반중","t":"s"},
+  {"id":116,"name":"이강산","from_":"(화성오산)성산초등학교(복합특수학급)","pl":"영동중","t":"s"},
+  {"id":117,"name":"김재희","from_":"수원제일중학교(특수학급)","pl":"명인중","t":"s","fromMid":"수원제일중"},
+  {"id":118,"name":"김진","from_":"수원제일중학교(특수학급)","pl":"명인중","t":"s","fromMid":"수원제일중"}
+];
+// ═══════════════════════════════════════════════════════════
+var KEY='mid2027-placement', TN={s:'특수학급',i:'순회학급',c:'복합특수학급'}, PER={s:6,i:4,c:4};
+var orig={}; 학생.forEach(function(s){orig[s.id]=s.pl+'|'+s.t;});
+function cur(s){return s.pl?s.pl+'|'+s.t:'';}
+try{var sv=JSON.parse(localStorage.getItem(KEY)||'{}');학생.forEach(function(s){if(sv[s.id]!==undefined){var p=sv[s.id].split('|');s.pl=p[0]||'';s.t=p[1]||s.t;}});}catch(e){}
+function save(){var d={};학생.forEach(function(s){if(cur(s)!==orig[s.id])d[s.id]=cur(s);});try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}}
+var byName={};학교.forEach(function(s){byName[s.name]=s;});
+var opts=[];학교.slice().sort(function(a,b){return a.name.localeCompare(b.name,'ko');}).forEach(function(s){
+  opts.push([s.name+'|s',s.name]); if(s.ic)opts.push([s.name+'|i',s.name+' 순회학급']); if(s.cc)opts.push([s.name+'|c',s.name+' 복합특수학급']);});
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function judge(e,n,per){if(!n)return 'none';var q=n*per;if(e>q)return 'over';if(e===q)return 'full';if(e<=per*(n-1))return 'cut';return 'none';}
+function calc(sch){
+  var r={};
+  ['s','i','c'].forEach(function(t){
+    var n=t==='s'?sch.sc:t==='i'?sch.ic:sch.cc, c0=t==='s'?sch.scur:t==='i'?sch.icur:sch.ccur, g=t==='s'?sch.sgrad:t==='i'?sch.igrad:sch.cgrad;
+    var list=학생.filter(function(x){return x.pl===sch.name&&x.t===t&&x.fromMid!==sch.name;});
+    var out=t==='s'?학생.filter(function(x){return x.fromMid===sch.name&&!(x.pl===sch.name&&x.t==='s');}).length:0;
+    var e=c0-g+list.length-out;
+    r[t]={list:list,e:e,q:n*PER[t],n:n,st:judge(e,n,PER[t])};
+  });
+  return r;
+}
+var stTxt={none:'여석',full:'충족',cut:'감축',over:'과원'};
+function stDetail(x){if(x.st==='over')return (x.e-x.q)+'명 과원';if(x.st==='full')return '정원 충족';if(x.st==='cut')return '감축 대상';return (x.q-x.e)+'명 여석';}
+var map,ovs={},filter='all',focus=null,region='';
+function inRegion(s){return !region||(s.zone||[]).indexOf(region)>=0;}
+function names(l){return l.map(function(x){return esc(x.name);}).join(', ');}
+function labelHtml(sch,r){
+  var h='<div class="mk-nm">'+sch.name+'</div><div class="mk-cnt">'+r.s.e+'명</div>'
+    +'<div class="mk-cap">'+(sch.newcls?'특수학급 신설 예정 · 정원 '+r.s.q+'명':sch.sc+'학급 · 정원 '+r.s.q+'명')+'</div>';
+  if(sch.ic) h+='<div class="mk-ex"><span class="t-'+r.i.st+'">순회 '+r.i.e+'/'+r.i.q+'</span></div>';
+  if(sch.cc) h+='<div class="mk-ex"><span class="t-'+r.c.st+'">복합 '+r.c.e+'/'+r.c.q+'</span></div>';
+  var lines=[];
+  if(r.s.list.length) lines.push(r.s.list.length+'명: '+names(r.s.list));
+  if(r.i.list.length) lines.push('순회 '+r.i.list.length+'명: '+names(r.i.list));
+  if(r.c.list.length) lines.push('복합 '+r.c.list.length+'명: '+names(r.c.list));
+  if(lines.length) h+='<div class="mk-st">'+lines.join('<br>')+'</div>';
+  if(sch.note&&!sch.newcls) h+='<div class="mk-note">'+esc(sch.note)+'</div>';
+  return h;
+}
+function renderMap(){
+  if(!map)return;
+  var cnt={none:0,full:0,cut:0,over:0};
+  학교.forEach(function(sch){
+    var r=calc(sch),o=ovs[sch.name],inr=inRegion(sch);
+    if(inr)cnt[r.s.st]++;
+    o.el.className='mk st-'+r.s.st+(focus===sch.name?' sel':'');
+    o.el.innerHTML=labelHtml(sch,r);
+    var has=r.s.list.length+r.i.list.length+r.c.list.length>0;
+    var show=inr&&(filter==='all'||(filter==='has'&&has)||(filter==='over'&&r.s.st==='over'));
+    o.ov.setMap(show?map:null);
+  });
+  ['OK','Cut','Full','Over'].forEach(function(k,i){document.getElementById('s'+k).textContent=cnt[['none','cut','full','over'][i]]+'곳';});
+}
+function renderSummary(){var pl=학생.filter(function(s){return s.pl;}).length;
+  document.getElementById('sStu').textContent=학생.length+'명';document.getElementById('sPl').textContent=pl+'명';document.getElementById('sUn').textContent=(학생.length-pl)+'명';}
+function optHtml(v){var h='<option value=""'+(v?'':' selected')+'>미정</option>';opts.forEach(function(o){h+='<option value="'+o[0]+'"'+(o[0]===v?' selected':'')+'>'+o[1]+'</option>';});return h;}
+function resHtml(s){if(!s.pl)return '';var x=calc(byName[s.pl])[s.t];return '<span class="st-res c-'+x.st+'">'+x.e+'/'+x.q+' '+stTxt[x.st]+'</span>';}
+function origTxt(id){var p=orig[id].split('|');return p[0]?p[0]+(p[1]!=='s'?' '+TN[p[1]]:''):'미정';}
+function renderList(){
+  var q=document.getElementById('q').value.trim(),v=document.getElementById('view').value;
+  var items=학생.filter(function(s){
+    if(focus&&s.pl!==focus)return false;
+    if(v==='un'&&s.pl)return false;
+    if(v==='chg'&&cur(s)===orig[s.id])return false;
+    if(q&&[s.name,s.from_,s.pl,s.fromMid||''].join(' ').indexOf(q)<0)return false;
+    return true;});
+  document.getElementById('pCount').textContent=items.length+'명 표시';
+  var box=document.getElementById('list');
+  if(!items.length){box.innerHTML='<div class="empty">조건에 맞는 학생이 없어요. 검색어나 보기 조건을 바꿔 보세요.</div>';return;}
+  box.innerHTML=items.map(function(s){var chg=cur(s)!==orig[s.id];
+    return '<div class="st'+(chg?' chg':'')+'" data-id="'+s.id+'"><div class="st-top"><span class="st-nm">'+esc(s.name)
+      +(s.fromMid?'<span class="badge re">재배치</span>':'')+(chg?'<span class="badge">변경</span>':'')+'</span><span class="st-from">'+esc(s.from_)+'</span></div>'
+      +(chg?'<div class="st-meta">원래 '+esc(origTxt(s.id))+'</div>':'')
+      +'<div class="st-pick"><select aria-label="'+esc(s.name)+' 배치교">'+optHtml(cur(s))+'</select>'+resHtml(s)+'</div></div>';}).join('');
+}
+function renderFocus(){var b=document.getElementById('pSch');if(!focus){b.style.display='none';return;}
+  var x=calc(byName[focus]).s;b.style.display='flex';document.getElementById('pSchName').textContent=focus;
+  document.getElementById('pSchInfo').textContent='특수학급 '+x.e+'/'+x.q+'명 · '+stDetail(x);}
+function refresh(){renderMap();renderSummary();renderList();renderFocus();}
+document.getElementById('list').addEventListener('change',function(e){if(e.target.tagName!=='SELECT')return;
+  var id=+e.target.closest('.st').dataset.id,p=e.target.value.split('|');
+  학생.forEach(function(s){if(s.id===id){s.pl=p[0]||'';if(p[1])s.t=p[1];}});save();refresh();});
+document.getElementById('q').addEventListener('input',renderList);
+document.getElementById('view').addEventListener('change',renderList);
+document.getElementById('pSchClear').addEventListener('click',function(){focus=null;refresh();});
+document.querySelectorAll('.filters .btn').forEach(function(b){b.addEventListener('click',function(){
+  document.querySelectorAll('.filters .btn').forEach(function(x){x.classList.remove('on');});b.classList.add('on');filter=b.dataset.f;renderMap();});});
+document.getElementById('region').addEventListener('change',function(){region=this.value;
+  document.getElementById('regionTag').textContent=region?region+' · ':'';renderMap();if(!map)return;
+  if(!region){map.setCenter(new kakao.maps.LatLng(37.272,127.010));map.setLevel(7);return;}
+  var b=new kakao.maps.LatLngBounds(),n=0;학교.forEach(function(s){if(inRegion(s)){b.extend(ovs[s.name].ov.getPosition());n++;}});if(n)map.setBounds(b,80,80,80,80);});
+document.getElementById('btnPanel').addEventListener('click',function(){var p=document.getElementById('panel'),open=p.classList.toggle('hide')===false;
+  document.body.classList.toggle('panel-open',open);this.textContent=open?'학생 목록 닫기':'학생 목록 열기';});
+document.getElementById('btnReset').addEventListener('click',function(){var n=학생.filter(function(s){return cur(s)!==orig[s.id];}).length;
+  if(!n){alert('변경한 학생이 없어요.');return;}if(!confirm('변경한 '+n+'명의 배치교를 파일에 저장된 원래 값으로 되돌릴까요?'))return;
+  학생.forEach(function(s){var p=orig[s.id].split('|');s.pl=p[0];s.t=p[1];});try{localStorage.removeItem(KEY);}catch(e){}refresh();});
+document.getElementById('btnCsv').addEventListener('click',function(){
+  var rows=[['순번','출신 초등학교','이름','배치교','배치유형','원래 배치','재배치 전 학교']];
+  학생.forEach(function(s){rows.push([s.id,s.from_,s.name,s.pl,s.pl?TN[s.t]:'',origTxt(s.id),s.fromMid||'']);});
+  var csv='\ufeff'+rows.map(function(r){return r.map(function(x){x=String(x==null?'':x);return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;}).join(',');}).join('\r\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='2027_중학교_배치결과.csv';document.body.appendChild(a);a.click();a.remove();});
+kakao.maps.load(function(){
+  map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(37.272,127.010),level:7});
+  map.addControl(new kakao.maps.ZoomControl(),kakao.maps.ControlPosition.BOTTOMRIGHT);
+  학교.forEach(function(sch){
+    var el=document.createElement('div');
+    el.addEventListener('click',function(){focus=(focus===sch.name)?null:sch.name;
+      if(focus&&document.getElementById('panel').classList.contains('hide'))document.getElementById('btnPanel').click();
+      document.getElementById('view').value='all';refresh();});
+    var ov=new kakao.maps.CustomOverlay({content:el,position:new kakao.maps.LatLng(sch.lat,sch.lng),yAnchor:.5,xAnchor:.5,zIndex:2,clickable:true});
+    ovs[sch.name]={el:el,ov:ov};
+    if(sch.addr&&kakao.maps.services){new kakao.maps.services.Geocoder().addressSearch(sch.addr,function(r,st){
+      if(st===kakao.maps.services.Status.OK&&r.length)ov.setPosition(new kakao.maps.LatLng(r[0].y,r[0].x));});}
+  });
+  refresh();
+});
+renderSummary();renderList();
+</script>
+</body>
+</html>
