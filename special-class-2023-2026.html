@@ -71,6 +71,35 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
 #qres .it:hover,#qres .it.on{background:var(--bg)}
 #qres .ad{font-size:11px;color:var(--sub);margin-left:auto;white-space:nowrap}
 #qres .none{padding:8px;color:var(--sub);font-size:12px}
+.dtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.dtop .back{margin:0}.prt{font-size:11.5px;padding:4px 10px}
+.ponly{display:none}
+.bpw{display:none}.bpn{font-size:11px;color:#0f766e;margin-right:8px}
+@page bpl{size:A4 landscape;margin:10mm}
+@media print{
+  .bpw{display:block!important}
+  .bpg{break-before:page;page-break-before:always;text-align:center}
+  .bpg h3{margin:0 0 6px;font-size:14px;color:#0f766e;text-align:left;border-bottom:2px solid #0f766e;padding-bottom:3px}
+  .bpg img{max-width:100%;max-height:255mm;object-fit:contain}
+  .bpg.l{page:bpl}.bpg.l img{max-height:170mm}
+}
+@media print{
+  @page{size:A4 portrait;margin:12mm 12mm 10mm}
+  html,body{height:auto!important;background:#fff!important;color:#111!important}
+  .app{display:block!important;height:auto!important}
+  #map,.head,.ctl,#overview,.dtop,.legend,.zonebadge{display:none!important}
+  .side{width:100%!important;border:0!important;overflow:visible!important;height:auto!important}
+  .scroll{overflow:visible!important}
+  #detail{display:block!important;padding:0!important;font-size:11px}
+  .ponly{display:flex!important}
+  .phd{justify-content:space-between;border-bottom:2px solid #0f766e;padding-bottom:4px;margin-bottom:8px;font-size:11px;font-weight:700;color:#0f766e}
+  .phd span{font-weight:400;color:#555}
+  #detail h2{font-size:17px}#detail h4{margin:10px 0 4px;font-size:12px;break-after:avoid}
+  #detail table{font-size:10.5px;break-inside:avoid}#detail th,#detail td{padding:3px 3px;border-color:#ccc}
+  #detail th{background:#f1f5f4!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #detail svg{max-height:120px;break-inside:avoid}
+  .tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .note{font-size:9.5px}
+}
 .mk{border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:11px;cursor:pointer;transform:translate(-50%,-50%)}
 .mk.sel{outline:3px solid #f59e0b;outline-offset:1px}
 .mlabel{font-size:11px;font-weight:700;background:rgba(255,255,255,.9);padding:1px 5px;border-radius:4px;transform:translate(-50%,8px);white-space:nowrap;pointer-events:none}
@@ -232,8 +261,12 @@ function chart(o){
   return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="특수학급 학생수 추이">'+g+'</svg>';
 }
 function gl(o){return o.lv==='유'?['3세','4세','5세']:(o.lv==='초'?['1','2','3','4','5','6']:['1','2','3'])}
+var BP={"매원중": [["24-1.jpg", 0]], "호매실중": [["17-1.jpg", 0]], "산남초": [["07-1.jpg", 0]], "산의초": [["08-1.jpg", 1]], "망포초": [["05-1.jpg", 0], ["05-2.jpg", 0]], "세곡초": [["15-1.jpg", 1]], "영동중": [["23-1.jpg", 0]], "대평중": [["19-1.jpg", 0], ["19-2.jpg", 1]], "천천중": [["20-1.jpg", 0]], "선행초": [["09-1.jpg", 0]], "수원중촌초": [["11-1.jpg", 0]], "팔달초": [["14-1.jpg", 0]], "창용초": [["13-1.jpg", 0]], "영화초": [["12-1.jpg", 1]], "글빛초": [["04-1.jpg", 0]], "연무중": [["21-1.jpg", 0], ["21-2.jpg", 1]], "광교초": [["02-1.jpg", 1]], "명인중": [["18-1.jpg", 0]], "광교호수중": [["22-1.jpg", 1]], "곡반초": [["01-1.jpg", 0], ["01-2.jpg", 1]], "광교호수초": [["03-1.jpg", 1], ["03-2.jpg", 1], ["03-3.jpg", 1], ["03-4.jpg", 1]], "능실중": [["16-1.jpg", 0]], "매교초": [["06-1.jpg", 0]], "수원신곡초": [["10-1.jpg", 0]]};
+function prtD(){var im=[].slice.call(document.querySelectorAll('#detail .bpw img')),n=im.filter(function(i){return !i.complete}).length;if(!n){window.print();return}
+  im.forEach(function(i){if(!i.complete){i.onload=i.onerror=function(){if(--n===0)window.print()}}})}
 function detail(o){
-  var h='<span class="back" id="bk">← 목록으로</span><h2>'+o.n+' <span class="tag" style="background:var(--accent);vertical-align:middle">'+LV[o.lv]+'</span></h2><div class="ad">'+(o.ad||'')+'</div>';
+  var zn=(o.z||[]).map(function(id){return Z[id]?Z[id].nm:''}).filter(Boolean);
+  var h='<div class="dtop"><span class="back" id="bk">← 목록으로</span><span>'+(BP[o.n]?'<span class="bpn">배치도 '+BP[o.n].length+'쪽 포함</span>':'')+'<button class="btn prt" onclick="prtD()">PDF로 저장·인쇄</button></span></div><div class="ponly phd">수원 특수학급 신·증설 현황 · 학교별 현황<span>출력일 '+(function(d){return d.getFullYear()+'. '+(d.getMonth()+1)+'. '+d.getDate()+'.'})(new Date())+'</span></div><h2>'+o.n+' <span class="tag" style="background:var(--accent);vertical-align:middle">'+LV[o.lv]+'</span></h2><div class="ad">'+(o.ad||'')+(zn.length?'<br>'+(o.lv==='초'?'통학구역':'중학군')+': '+zn.join(', '):'')+'</div>';
   h+='<table><tr><th>연도</th><th>특수학급</th><th>학생</th><th>순회</th><th>일반<br>배치</th><th>지도사</th><th>과밀</th><th>변동</th></tr>';
   YEARS.forEach(function(y){var r=o.y[y],c=change(o,y);h+='<tr><td>'+y+' <span style="color:#9ca3af;font-size:10.5px">'+YLAB[y]+'</span></td><td><b>'+(r?r.sc:'–')+'</b>'+(r&&r.cc?' <span style="font-size:10.5px;color:var(--sub)">+복합'+r.cc+'</span>':'')+'</td><td>'+(r?r.ss:'–')+(r&&r.cs?' <span style="font-size:10.5px;color:var(--sub)">+'+r.cs+'</span>':'')+'</td><td>'+(r&&r.ic?r.ic+'학급 '+r.is+'명':'–')+'</td><td>'+(r&&r.gs!=null?r.gs:'–')+'</td><td>'+(r&&r.jd!=null?r.jd:'–')+'</td><td>'+(r&&over(o,y)?'<span class="tag" style="background:#be123c">+'+over(o,y)+'</span>':(r?'<span style="color:var(--sub)">·</span>':'–'))+'</td><td>'+(y==='2023'||c==='same'?'':'<span class="tag" style="background:'+CH[c][1]+'">'+CH[c][0]+'</span>')+'</td></tr>'});
   h+='</table>'+(o.y['2027']?'<p class="note">2027년은 10월 특운위 결과 반영 예상치'+(o.y['2027'].nt?' · 비고: <b>'+o.y['2027'].nt+'</b>':'')+'</p>':'')+'<h4>특수학급 학생수 추이</h4>'+chart(o);
@@ -250,6 +283,7 @@ function detail(o){
     h+='</table><p class="note">'+(KG?'유치원알리미 공시':'학교알리미 공시(4월 기준)')+'</p>'}
   else if(o.lv==='고')h+='<p class="note">'+LV[o.lv]+'는 특수학급 현황만 보여드려요.</p>';
   if(o.lv==='초'&&(!o.z||!o.z.length))h+='<p class="note">통학구역이 없는 학교예요.</p>';
+  if(BP[o.n]){var L=BP[o.n];h+='<div class="bpw">'+L.map(function(f,i){return '<div class="bpg'+(f[1]?' l':'')+'"><h3>'+o.n+' 교실배치도'+(L.length>1?' ('+(i+1)+'/'+L.length+')':'')+'</h3><img src="bp/'+f[0]+'" alt=""></div>'}).join('')+'</div>'}
   var dt=document.getElementById('detail');dt.innerHTML=h;dt.classList.add('show');document.getElementById('overview').style.display='none';
   document.getElementById('bk').onclick=function(){st.sel=null;dt.classList.remove('show');document.getElementById('overview').style.display='';clearZones();render()};
 }
