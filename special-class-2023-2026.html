@@ -293,8 +293,8 @@ function detail(o){
   YEARS.forEach(function(y){var r=o.y[y];h+='<tr><td>'+y+'</td>'+G.map(function(g,i){return '<td>'+(r&&r.gr?r.gr[i]:'–')+'</td>'}).join('')+'<td><b>'+(r?sv(r):'–')+'</b></td></tr>'});
   h+='</table>';
   if(YEARS.some(function(y){return o.y[y]&&o.y[y].gg})){h+='<h4>일반학급 배치 특수교육대상자 '+(o.lv==='유'?'연령별':'학년별')+' 학생수</h4><table><tr><th>연도</th>'+G.map(function(g){return '<th>'+g+(o.lv==='유'?'':'학년')+'</th>'}).join('')+'<th>계</th></tr>';
-    YEARS.forEach(function(y){var r=o.y[y];if(!r||!r.gg)return;h+='<tr><td>'+y+'</td>'+G.map(function(g,i){return '<td>'+r.gg[i]+'</td>'}).join('')+'<td><b>'+(r.gs||0)+'</b></td></tr>'});
-    h+='</table><p class="note">정보관리 기준 · 2027 예상은 자료가 없어 넣지 않았어요.</p>'}
+    YEARS.forEach(function(y){var r=o.y[y];if(!r)return;var gg=r.gg||G.map(function(){return 0});h+='<tr><td>'+y+'</td>'+G.map(function(g,i){return '<td>'+gg[i]+'</td>'}).join('')+'<td><b>'+(r.gs||0)+'</b></td></tr>'});
+    h+='</table><p class="note">정보관리 기준 · 2027은 11.1. 명단과 10월 특운위 결과로 계산한 예상치</p>'}
   if(o.g){var KG=o.lv==='유',G=KG?['만3세','만4세','만5세','혼합']:G;h+='<h4>'+(KG?'일반학급 연령별 학급수 · 원아수':'일반학급 학년별 학급수 · 학생수')+' <span style="font-weight:400;color:var(--sub);font-size:11px">('+(KG?'유치원알리미':'학교알리미')+')</span></h4><table><tr><th>연도</th>'+G.map(function(g){return '<th>'+g+(KG?'':'학년')+'</th>'}).join('')+'<th>계</th></tr>';
     YEARS.forEach(function(y){var r=o.g[y];if(!r){h+='<tr><td>'+y+'</td><td colspan="'+(G.length+1)+'">–</td></tr>';return}
       var tc=r.c.reduce(function(a,b){return a+b},0),ts=r.s.reduce(function(a,b){return a+b},0);
