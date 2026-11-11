@@ -73,6 +73,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
 #qres .none{padding:8px;color:var(--sub);font-size:12px}
 .dtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.dtop .back{margin:0}.prt{font-size:11.5px;padding:4px 10px}
 .ponly{display:none}
+.nr{margin:6px 0 10px}.nr>b{display:block;font-size:12px;color:var(--accent);margin-bottom:3px}
+.nri{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.nrk{flex:0 0 18px;height:18px;border-radius:50%;background:var(--bg);border:1px solid var(--line);font-size:10.5px;display:flex;align-items:center;justify-content:center;color:var(--sub)}
+.nri .sl{flex:1;min-width:0}.nrs{font-size:11px;color:var(--sub)}.nrd{font-size:12px;font-weight:700;min-width:44px;text-align:right}
+.nav{font-size:11px;padding:2px 7px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);text-decoration:none;white-space:nowrap}
 .bpw{display:none}.bpn{font-size:11px;color:#0f766e;margin-right:8px}
 .bpk{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:-2px 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:12px}
 .bpk b{color:var(--accent);font-size:12px}.bpk input{width:110px;padding:4px 7px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font-size:12px}
@@ -333,7 +338,16 @@ document.getElementById('base').addEventListener('input',function(e){var v=Math.
     var h='<span class="back" id="bk2">← 목록으로</span><h2 style="font-size:16px">'+label+'</h2><div class="ad">검색한 주소의 학구</div>';
     h+='<h4>초등학교 통학구역</h4><p>'+(el.length?el.map(function(id){return Z[id].nm}).join(', '):'찾지 못했어요')+'</p>'+(es.length?'<p style="margin-top:4px">'+es.map(link).join(' · ')+'</p>':'');
     h+='<h4>중학군</h4><p>'+(mid.length?mid.map(function(id){return Z[id].nm}).join(', '):'찾지 못했어요')+'</p>'+(ms.length?'<p style="margin-top:4px;line-height:1.8">특수학급 설치 중학교: '+ms.map(link).join(' · ')+'</p>':'');
-    h+='<p class="note">학구 경계는 지도에 넣은 통학구역·중학군 경계 자료 기준이에요. 실제 배정은 주소지·학교 사정에 따라 다를 수 있어요.</p>';
+    var LN={'유':'유치원','초':'초등학교','중':'중학교','고':'고등학교'},nh='';
+    function hv(a1,o1,a2,o2){var R=6371,r=Math.PI/180,dA=(a2-a1)*r,dO=(o2-o1)*r,x=Math.sin(dA/2)*Math.sin(dA/2)+Math.cos(a1*r)*Math.cos(a2*r)*Math.sin(dO/2)*Math.sin(dO/2);return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
+    function fd(d){return d<1?Math.round(d*1000)+'m':d.toFixed(1)+'km'}
+    ['유','초','중','고'].forEach(function(lv){if(!st.lv[lv])return;
+      var L=D.filter(function(o){var r=o.y[st.y];return o.lv===lv&&o.lat&&r&&(sc(o,st.y)>0||r.ic>0)}).map(function(o){return {o:o,d:hv(lat,lng,o.lat,o.lng)}}).sort(function(x,y){return x.d-y.d}).slice(0,5);
+      if(!L.length)return;
+      nh+='<div class="nr"><b>'+LN[lv]+'</b>'+L.map(function(x,i){var o=x.o,r=o.y[st.y],u='https://map.kakao.com/link/from/'+encodeURIComponent('검색 위치')+','+lat+','+lng+'/to/'+encodeURIComponent(o.n)+','+o.lat+','+o.lng;
+        return '<div class="nri"><span class="nrk">'+(i+1)+'</span><a href="#" class="sl" data-n="'+o.n+'">'+o.n+'</a><span class="nrs">'+(sc(o,st.y)?'특수 '+sc(o,st.y)+'학급':'순회')+'</span><span class="nrd">'+fd(x.d)+'</span><a class="nav" href="'+u+'" target="_blank" rel="noopener">길찾기</a></div>'}).join('')+'</div>'});
+    h+='<h4>가까운 특수학급 설치교 <span style="font-weight:400;color:var(--sub);font-size:11.5px">('+(st.y==='2027'?'2027 예상':st.y)+' 기준 · 직선거리)</span></h4>'+(nh||'<p>선택한 학교급에 해당하는 학교가 없어요.</p>');
+    h+='<p class="note">학구 경계는 지도에 넣은 통학구역·중학군 경계 자료 기준이에요. 실제 배정은 주소지·학교 사정에 따라 다를 수 있어요. 거리는 직선거리이며, 길찾기를 누르면 카카오맵에서 실제 경로를 볼 수 있어요.</p>';
     var dt=document.getElementById('detail');dt.innerHTML=h;dt.classList.add('show');document.getElementById('overview').style.display='none';
     dt.querySelectorAll('.sl').forEach(function(a){a.onclick=function(e){e.preventDefault();go(D.find(function(x){return x.n===a.dataset.n}))}});
     document.getElementById('bk2').onclick=function(){if(pin){pin.setMap(null);pin=null}dt.classList.remove('show');document.getElementById('overview').style.display='';clearZones();render()};
