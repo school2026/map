@@ -78,6 +78,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)
 .nrk{flex:0 0 18px;height:18px;border-radius:50%;background:var(--bg);border:1px solid var(--line);font-size:10.5px;display:flex;align-items:center;justify-content:center;color:var(--sub)}
 .nri .sl{flex:1;min-width:0}.nrs{font-size:11px;color:var(--sub)}.nrd{font-size:12px;font-weight:700;min-width:44px;text-align:right}
 .nav{font-size:11px;padding:2px 7px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);text-decoration:none;white-space:nowrap}
+.rch{display:flex;justify-content:space-between;align-items:center;padding:6px 12px 4px;font-size:11.5px;color:var(--sub)}.rch .rcx{color:var(--sub);font-size:11px}
 .bpw{display:none}.bpn{font-size:11px;color:#0f766e;margin-right:8px}
 .bpk{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:-2px 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:12px}
 .bpk b{color:var(--accent);font-size:12px}.bpk input{width:110px;padding:4px 7px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font-size:12px}
@@ -359,18 +360,24 @@ document.getElementById('base').addEventListener('input',function(e){var v=Math.
     g.addressSearch(v,function(r,s){if(s===kakao.maps.services.Status.OK&&r[0]){showAddr(+r[0].y,+r[0].x,r[0].address_name||v);return}
       new kakao.maps.services.Places().keywordSearch('수원 '+v,function(r2,s2){if(s2===kakao.maps.services.Status.OK&&r2[0]){showAddr(+r2[0].y,+r2[0].x,r2[0].place_name+' ('+(r2[0].road_address_name||r2[0].address_name)+')')}else alertBox('"'+v+'" 주소를 찾지 못했어요. 도로명이나 동·번지로 다시 검색해 보세요.')})})}
   function alertBox(m){R.innerHTML='<div class="none">'+m+'</div>';R.hidden=false}
-  function show(){var raw=q.value.trim(),v=norm(raw);if(!v){R.hidden=true;return}
+  var RK='sc-recent';function rcGet(){try{return JSON.parse(localStorage.getItem(RK))||[]}catch(e){return []}}
+  function rcSet(L){try{localStorage.setItem(RK,JSON.stringify(L))}catch(e){}}
+  function rcAdd(h){var k=h.o?{o:h.o.n}:{a:h.a};var L=rcGet().filter(function(x){return !(x.o&&x.o===k.o||x.a&&x.a===k.a)});L.unshift(k);rcSet(L.slice(0,3))}
+  function showRecent(){var L=rcGet().map(function(x){return x.o?{o:D.find(function(d){return d.n===x.o})}:{a:x.a}}).filter(function(h){return h.o||h.a});
+    if(!L.length){R.hidden=true;return}hits=L;cur=-1;
+    R.innerHTML='<div class="rch"><span>최근 검색</span><a href="#" class="rcx">지우기</a></div>'+hits.map(function(h,i){return '<div class="it" data-i="'+i+'"><span class="tag" style="background:'+(h.o?'var(--accent)':'#6d28d9')+'">'+(h.o?h.o.lv:'주소')+'</span><b>'+(h.o?h.o.n:h.a)+'</b>'+(h.o?'<span class="ad">'+(h.o.ad||'')+'</span>':'')+'</div>'}).join('');R.hidden=false}
+  function show(){var raw=q.value.trim(),v=norm(raw);if(!v){showRecent();return}
     var sh=D.filter(function(o){return norm(o.n).indexOf(v)>=0}).sort(function(a,b){return norm(a.n).indexOf(v)-norm(b.n).indexOf(v)||a.n.length-b.n.length}).slice(0,8);
     hits=sh.map(function(o){return {o:o}});if(raw.length>=2)hits.push({a:raw});cur=0;
     R.innerHTML=hits.map(function(h,i){return h.o?'<div class="it'+(i===0?' on':'')+'" data-i="'+i+'"><span class="tag" style="background:var(--accent)">'+h.o.lv+'</span><b>'+h.o.n+'</b><span class="ad">'+(h.o.ad||'')+'</span></div>'
       :'<div class="it addr'+(i===0?' on':'')+'" data-i="'+i+'"><span class="tag" style="background:#6d28d9">주소</span><span>"'+h.a+'" 주소·장소로 찾고 학구 보기</span></div>'}).join('')||'<div class="none">학교명이나 주소를 입력하세요.</div>';
     R.hidden=false}
-  function pick(h){if(!h)return;if(h.o)go(h.o);else goAddr(h.a)}
+  function pick(h){if(!h)return;rcAdd(h);if(h.o)go(h.o);else goAddr(h.a)}
   q.addEventListener('input',show);q.addEventListener('focus',show);
   q.addEventListener('keydown',function(e){if(R.hidden){if(e.key==='Enter'){e.preventDefault();show();pick(hits[0])}return}var its=R.querySelectorAll('.it');
     if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!its.length)return;cur=(cur+(e.key==='ArrowDown'?1:its.length-1))%its.length;its.forEach(function(x,i){x.classList.toggle('on',i===cur)});its[cur].scrollIntoView({block:'nearest'})}
-    else if(e.key==='Enter'){e.preventDefault();pick(hits[cur])}else if(e.key==='Escape'){R.hidden=true}});
-  R.addEventListener('mousedown',function(e){var it=e.target.closest('.it');if(it){e.preventDefault();pick(hits[+it.dataset.i])}});
+    else if(e.key==='Enter'){e.preventDefault();pick(hits[Math.max(cur,0)])}else if(e.key==='Escape'){R.hidden=true}});
+  R.addEventListener('mousedown',function(e){if(e.target.closest('.rcx')){e.preventDefault();rcSet([]);R.hidden=true;return}var it=e.target.closest('.it');if(it){e.preventDefault();pick(hits[+it.dataset.i])}});
   q.addEventListener('blur',function(){setTimeout(function(){R.hidden=true},150)});
 })();
 buildControls();document.querySelectorAll('#modes .btn').forEach(function(b){b.onclick=function(){st.mode=b.dataset.m;render()}});render();
